@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-const LikeSchema = new Schema(
+const bookmarkSchema = new Schema(
     {
         user:{
             type:Schema.Types.ObjectId,
@@ -16,4 +16,4 @@ const LikeSchema = new Schema(
     {timestamps:true}
 )
 
-export default mongoose.model('Liked',LikeSchema)
+export default mongoose.model('Bookmarked',bookmarkSchema);

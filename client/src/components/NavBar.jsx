@@ -2,9 +2,12 @@ import { Button, IconButton } from '@mui/material';
 import { navs } from '../config/assets';
 import {Login, Logout} from '@mui/icons-material';
 import MenuBar from './Menu';
+import React from 'react';
 
 function NavBar() {
-
+  //current user 
+  var currentuser = React.useRef(JSON.parse(localStorage.getItem('currentuser')));
+  
   return (
     <>
       <div className="fixed w-[100%] bg-purple-200 h-[4rem] z-[3] flex flex-row items-center justify-around max-lg:justify-between max-lg:px-[5vw] max-sm:px-1">
@@ -19,14 +22,20 @@ function NavBar() {
               </a>
             ))
           }
-          <Button size='small' variant='contained' sx={{fontSize:'0.75rem',fontWeight:'400'}} endIcon={<Login fontSize='small'/>}>
-            login
-          </Button>
-          <Button size='small' variant='contained' color='error' sx={{fontSize:'0.75rem',fontWeight:'400'}} endIcon={<Logout fontSize='small'/>}>
-            logout
-          </Button>
+          {
+            currentuser.current?
+            <Button size='small' variant='contained' color='error' sx={{fontSize:'0.75rem',fontWeight:'400',textTransform:'capitalize'}} endIcon={<Logout fontSize='small'/>}>
+              logout
+            </Button>:
+            <Button href='/login' size='small' variant='contained' sx={{fontSize:'0.75rem',fontWeight:'400'}} endIcon={<Login fontSize='small'/>}>
+              login
+            </Button>
+          }
         </div>
-        <MenuBar/>
+        {/* menu bar for less than 1024 px sized device */}
+        <>
+          <MenuBar/>
+        </>
       </div>
     </>
   )

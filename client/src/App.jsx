@@ -6,6 +6,7 @@ import VarificationCode from './pages/VarificationCode';
 import ConfirmPassword from './pages/ConfirmPassword';
 import LogIn from './pages/LogIn';
 import SignUp from './pages/SignUp';
+import Home from './components/Home';
 
 function App() {
 
@@ -13,6 +14,7 @@ function App() {
     <>
       <Routes>
         <Route path='/' element={<Layout/>} >
+          <Route path='/' element={<Home/>} />
         </Route>
         <Route path='/forgetpassword' element={<ForgetPassword />} />
         <Route path='/verify' element={<VarificationCode/>}/>

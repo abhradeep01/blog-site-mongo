@@ -1,5 +1,7 @@
 import express from 'express';
-import { addPost, bookmarked, deletePost, getPosts, liked, partialUpdate, unbookmarked, unliked, updatePost } from '../controllers/posts.controller.js';
+import { addPost, deletePost, getPost, getPosts, partialUpdate, updatePost } from '../controllers/posts.controller.js';
+import { bookmarked, liked, unbookmarked, unliked } from '../controllers/interaction.controller.js';
+import { isValid } from '../middleware/isValid.js';
 const postRouter = express.Router();
 
 
@@ -7,20 +9,24 @@ const postRouter = express.Router();
 postRouter.get('/',getPosts);
 
 
+//get single post
+postRouter.get("/:id",getPost);
+
+
 //post liked route
-postRouter.post('/liked/:id',liked)
+postRouter.post('/:id/liked',liked)
 
 
 //post unliked route
-postRouter.delete('/unliked/:id',unliked);
+postRouter.delete('/:id/unliked',unliked);
 
 
 //post bookmarked route
-postRouter.post('/bookmarked/:id',bookmarked);
+postRouter.post('/:id/bookmarked',bookmarked);
 
 
 //post unbookmarked route
-postRouter.delete('/unbookmarked/:id',unbookmarked);
+postRouter.delete('/:id/unbookmarked',unbookmarked);
 
 
 //add post route
@@ -28,15 +34,15 @@ postRouter.post('/addpost',addPost);
 
 
 //update full post route
-postRouter.put('/update/:id',updatePost);
+postRouter.put('/:id/update',updatePost);
 
 
 //route for update partial post 
-postRouter.patch('/change/:id',partialUpdate);
+postRouter.patch('/:id/change',partialUpdate);
 
 
 //delete post route
-postRouter.delete('/delete/:id',deletePost);
+postRouter.delete('/:id/delete',deletePost);
 
 
 //export

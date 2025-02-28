@@ -1,28 +1,34 @@
+import asyncHanlder from "../middleware/asyncHandler.js"
+
 //userinfo 
-export const userInfo = async (req,res) =>{
+const userInfo = asyncHanlder(async (req,res,next) =>{
     res.send(req.params.username)
-}
+})
 
 
 //bookmarked post by user
-export const userBookmarked = async (req,res) =>{
+const userBookmarked = asyncHanlder(async (req,res) =>{
     res.send(`book marked by ${req.params.username}`)
-}
+})
 
 
 //liked post by user
-export const userLiked = async (req,res) =>{
+const userLiked = asyncHanlder(async (req,res) =>{
     res.send(`post liked by ${req.params.username}`)
-}
+})
 
 
 //user info update
-export const userInfoUpdate = async (req,res) =>{
+const userInfoUpdate = asyncHanlder(async (req,res) =>{
     res.send(`${req.params.username} is updated`)
-}
+})
 
 
 //delete user
-export const deleteUser = async (req,res) =>{
+const deleteUser = asyncHanlder(async (req,res) =>{
     res.send(`${req.params.username} is deleted`)
-}
+})
+
+
+//export
+export { userInfo, userLiked, userBookmarked, userInfoUpdate, deleteUser}

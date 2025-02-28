@@ -28,14 +28,24 @@ const postSchema = new mongoose.Schema(
             required:true
         },
         last_updated:{
-            type: Date,
-            required: true
+            type: Date
         },
         visit:{
             type:Number,
-            required: true
+            default:0
+        },
+        liked:{
+            type:[Schema.Types.ObjectId],
+            ref:'User',
+            default:[]
+        },
+        bookmarked:{
+            type:[Schema.Types.ObjectId],
+            ref:'User',
+            default:[]
         }
-    }
+    },
+    {timestamps:true}
 )
 
 export default mongoose.model('Post',postSchema);

@@ -1,11 +1,7 @@
-import { OutlinedInput } from '@mui/material';
-import React from 'react'
-
 function InputBox(props) {
   return (
-    <OutlinedInput
-      type='text'
-      sx={{width:'100%',height:'2.15rem'}}
+    <input
+      className='w-full h-[2.5rem] p-1.5 rounded border border-gray-400 focus:outline-gray-800 focus:outline-none'
       {...props}
     />
   )

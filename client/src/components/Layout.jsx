@@ -6,9 +6,9 @@ import Footer from './Footer'
 function Layout() {
   return (
     <>
-        <NavBar/>
-        <Outlet/>
-        <Footer/>
+      <NavBar/>
+      <Outlet/>
+      <Footer/>
     </>
   )
 }

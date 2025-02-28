@@ -2,8 +2,8 @@ import cloudinary from "../config/cloudinary.js";
 
 
 //image upload of user
-export const userImgUpload = async (imguri) =>{
-    await cloudinary.uploader.upload(imguri,{
+export const userImgUpload = async (req,res) =>{
+    await cloudinary.uploader.upload(req.body.imgurl,{
         resource_type:'image',
         public_id: 'img',
         overwrite:true,
@@ -14,21 +14,15 @@ export const userImgUpload = async (imguri) =>{
             aspect_ratio:'1:1'
         }
     }).then(result=>{
-        return {
-            url:result.secure_url,
-            success:true
-        }
+        res.status(200).json(result.secure_url)
     }).catch(err=>{
-        console.log(err);
-        return {
-            success:false
-        }
+        res.status(400).send(err)
     })
 }
 
 
 //user image delete
-export const userImgDelete = async (imguri) =>{
+export const userImgDelete = async (req,res) =>{
     await cloudinary.api.delete_resources(imguri,{
         type:'upload',
         resource_type:'image'
@@ -44,8 +38,10 @@ export const userImgDelete = async (imguri) =>{
         }
     });
 }
+
+
 //post image upload
-export const postImgUpload = async (imguri) =>{
+export const postImgUpload = async (req,res) =>{
     await cloudinary.uploader.upload(imguri,{
         resource_type:'image',
         public_id:'post',
@@ -71,7 +67,7 @@ export const postImgUpload = async (imguri) =>{
 
 
 //post delete
-export const postDelete = async (imguri) =>{
+export const postDelete = async (req,res) =>{
     await cloudinary.api.delete_resources([imguri],{
         resource_type:'image',
         type:'upload'

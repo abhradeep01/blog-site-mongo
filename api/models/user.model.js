@@ -2,11 +2,6 @@ import mongoose, { Schema } from "mongoose";
 
 const userSchema = new Schema(
     {
-        userId:{
-            type: Schema.Types.ObjectId,
-            required: true,
-            unique: true
-        },
         name:{
             type: String,
             required: true,
@@ -16,9 +11,18 @@ const userSchema = new Schema(
             required: true,
             unique: true
         },
+        email:{
+            type:String,
+            required: true,
+            unique: true
+        },
+        password:{
+            type:String,
+            required:true
+        },
         img:{
             type: String,
-            required: true
+            required:true       
         },
         savedPosts:{
             type: [String],

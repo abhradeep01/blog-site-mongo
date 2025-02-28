@@ -1,4 +1,4 @@
-import { forgetPassword, login, logout, register } from '../controllers/auth.controller.js';
+import { changePassword, forgetPassword, login, logout, register } from '../controllers/auth.controller.js';
 
 import express from 'express';
 const authRouter = express.Router();
@@ -13,7 +13,11 @@ authRouter.post('/login',login);
 
 
 //forget password route
-authRouter.patch('/forgetpassword',forgetPassword);
+authRouter.post('/forgetpassword',forgetPassword);
+
+
+//change password route
+authRouter.patch('/changepassword',changePassword);
 
 
 //logout route
