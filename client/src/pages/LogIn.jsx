@@ -42,7 +42,7 @@ function LogIn() {
                 });
                 if(response.status===200){
                     setRes({...res,message:response.data.message+"redirecting to home page",state:true,success:true});
-                    localStorage.setItem('currentuser',JSON.stringify(response.data.data))
+                    localStorage.setItem('currentuser',JSON.stringify(response.data.data));
                     setTimeout(() => {
                         navigation('/')
                     }, 2000);
@@ -61,7 +61,7 @@ function LogIn() {
         e.preventDefault();
     }
   return (
-    <div className="w-[100vw] h-[100vh] flex justify-center">
+    <div className="w-[100%] h-[100%] flex justify-center">
         <div className="w-[25vw] max-2xl:w-[35vw] max-xl:w-[40vw] max-lg:w-[50vw] max-md:w-[65vw] max-sm:w-[97vw] h-fit bg-white mt-[3.5rem] px-[1.5rem] py-[4rem] rounded">
             <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
                 <div>

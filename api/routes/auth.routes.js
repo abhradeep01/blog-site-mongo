@@ -1,5 +1,4 @@
-import { changePassword, forgetPassword, login, logout, register } from '../controllers/auth.controller.js';
-
+import { changePassword, confirmEmail, login, logout, register, setCookieLogIn, setCookieRegister } from '../controllers/auth.controller.js';
 import express from 'express';
 const authRouter = express.Router();
 
@@ -13,7 +12,11 @@ authRouter.post('/login',login);
 
 
 //forget password route
-authRouter.post('/forgetpassword',forgetPassword);
+authRouter.post('/confirmemail',confirmEmail);
+
+
+//set cookie for user
+authRouter.post('/setcookie',setCookieLogIn);
 
 
 //change password route

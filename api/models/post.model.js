@@ -23,13 +23,6 @@ const postSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        upload_date:{
-            type:Date,
-            required:true
-        },
-        last_updated:{
-            type: Date
-        },
         visit:{
             type:Number,
             default:0
@@ -43,9 +36,14 @@ const postSchema = new mongoose.Schema(
             type:[Schema.Types.ObjectId],
             ref:'User',
             default:[]
+        },
+        commented:{
+            type:[Schema.Types.ObjectId],
+            ref:'User',
+            default:[]
         }
     },
     {timestamps:true}
-)
+);
 
 export default mongoose.model('Post',postSchema);

@@ -13,22 +13,6 @@ postRouter.get('/',getPosts);
 postRouter.get("/:id",getPost);
 
 
-//post liked route
-postRouter.post('/:id/liked',liked)
-
-
-//post unliked route
-postRouter.delete('/:id/unliked',unliked);
-
-
-//post bookmarked route
-postRouter.post('/:id/bookmarked',bookmarked);
-
-
-//post unbookmarked route
-postRouter.delete('/:id/unbookmarked',unbookmarked);
-
-
 //add post route
 postRouter.post('/addpost',addPost);
 

@@ -1,17 +1,17 @@
 import express from 'express';
-import { deleteUser, userBookmarked, userInfo, userInfoUpdate, userLiked } from '../controllers/user.controller.js';
+import { deleteUser, getUserPosts, userInfo, userPartialUpdate } from '../controllers/user.controller.js';
 const userRouter = express.Router();
 
 //user info route
-userRouter.get('/:username',userInfo).get('/:username/bookmarked',userBookmarked).get('/:username/liked',userLiked);
+userRouter.get('/:id',userInfo).get('/:id/posts',getUserPosts);
 
 
 //user info update
-userRouter.put('/:username/update',userInfoUpdate);
+userRouter.patch('/:id/change',userPartialUpdate);
 
 
 //user delete
-userRouter.delete('/:username/delete',deleteUser);
+userRouter.delete('/:id/delete',deleteUser);
 
 
 //export 

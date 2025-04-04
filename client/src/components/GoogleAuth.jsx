@@ -1,5 +1,5 @@
 import React from 'react'
-import { Google } from './Icons';
+import { Google } from '../config/icons';
 
 function GoogleAuth() {
   return (

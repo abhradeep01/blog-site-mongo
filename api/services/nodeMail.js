@@ -1,13 +1,14 @@
 import { transporter } from "../config/nodemailer.config.js";
 
 //send vrification code
-export const sendVarificationCode = async (code,receiver,purspose) =>{
+export const sendVarificationCode = async (receiver,subject,template) =>{
     // sending varification code
     const res = await transporter.sendMail(
         {
+            from:process.env.BLOG_SITE_MAIL_USER,
             to: receiver,
-            subject:'OTP for email varification',
-            html:`<p>one time password <code>${code}</code> for ${purspose}</p>`
+            subject:subject,
+            html:template
         }
     ).then(response=>{
         return {
@@ -19,6 +20,8 @@ export const sendVarificationCode = async (code,receiver,purspose) =>{
             success:false,
             err
         }
-    })
+    });
+    
+    //send response
     return res;
 }

@@ -6,7 +6,13 @@ import VarificationCode from './pages/VarificationCode';
 import ConfirmPassword from './pages/ConfirmPassword';
 import LogIn from './pages/LogIn';
 import SignUp from './pages/SignUp';
-import Home from './components/Home';
+import Home from './pages/Home';
+import PostPage from './pages/PostPage';
+import Profile from './pages/Profile';
+import ProfilePosts from './components/ProfilePosts';
+import ProfileSavedPost from './components/ProfileSavedPost';
+import ProfileLikedPosts from './components/ProfileLikedPosts';
+import NotFound from './components/NotFound';
 
 function App() {
 
@@ -14,13 +20,20 @@ function App() {
     <>
       <Routes>
         <Route path='/' element={<Layout/>} >
-          <Route path='/' element={<Home/>} />
+          <Route index element={<Home/>} />
+          <Route path='/:id' element={<PostPage/>} />
+          <Route path='/profile/:username' element={<Profile/>}>
+            <Route index element={<ProfilePosts/>} />
+            <Route path='saved' Component={<ProfileSavedPost/>} />
+            <Route path='liked' element={<ProfileLikedPosts/>} />
+          </Route>
         </Route>
         <Route path='/forgetpassword' element={<ForgetPassword />} />
         <Route path='/verify' element={<VarificationCode/>}/>
         <Route path='/setpassword' element={<ConfirmPassword/>}/>
         <Route path='/login' element={<LogIn/>}/>
         <Route path='/signup' element={<SignUp/>} />
+        <Route path='*' element={<NotFound/>}/>
       </Routes>
     </>
   )

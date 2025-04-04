@@ -1,21 +1,25 @@
 import { verifyToken } from "../services/auth.js";
+import { apiresponse } from "../utilities/apiResponse.js";
+import { apiError } from "../utilities/CustomError.js";
 
 //is valid with 
 export const isValid = async (req,res,next) =>{
     try {
-        const token = req.cookies.SESSIONTOKEN;
+        const token = req.cookies.uid;
+        var response;
 
         //if token doesn't exists
         if(!token){
-            return res.status(401).json("User is not authenticated");
+            response = new apiError("Unauthenticated User!",401);
+            return res.status(response.statusCode).json(response)
         }
 
         //decode token
         const info = verifyToken(token);
-        // console.log(info);
 
         if(info.success===false){
-            return res.status(401).json(`${info.message}`)
+            response = new apiError("cookies expired!",400);
+            return res.status(response.statusCode).json(response)
         }
 
         //next

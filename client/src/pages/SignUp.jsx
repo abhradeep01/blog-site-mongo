@@ -83,10 +83,7 @@ function SignUp() {
         try {
             if(inputs.fullname && inputs.username && inputs.email && inputs.password && imgurl ){
                 const res = await axiosClient.post('/auth/register',{
-                    fullname: inputs.fullname,
-                    username: inputs.username,
-                    email: inputs.email,
-                    password:inputs.password,
+                    ...inputs,
                     url
                 });
                 if(res.status===200){

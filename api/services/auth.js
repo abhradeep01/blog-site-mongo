@@ -8,7 +8,7 @@ export const verifyToken = (token,secret=process.env.ACCESS_TOKEN_KEY) =>{
     return jwt.verify(token,secret,(err,result)=>{
         if(err){
             return {
-                message:err,
+                err,
                 success:false
             }
         }
@@ -21,9 +21,9 @@ export const verifyToken = (token,secret=process.env.ACCESS_TOKEN_KEY) =>{
 
 
 //token creat
-export const createToken = async (payload={},remember=false,secret=process.env.ACCESS_TOKEN_KEY) =>{
+export const createToken = async (payload={},remember,secret=process.env.ACCESS_TOKEN_KEY) =>{
     //token
-    const token = jwt.sign(payload,secret,{expiresIn:remember?'30d':'1m',});
+    const token = jwt.sign(payload,secret,{expiresIn:remember?'30d':'1hr'});
 
     return token;
 }
