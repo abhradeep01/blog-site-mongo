@@ -1,12 +1,11 @@
 //error on api
 class apiError {
-  constructor(message = "something went wrong", statusCode, errors = []) {
-    // super(message); // Call the parent Error constructor
+  constructor(error, statusCode) {
+    // super(error); // Call the parent Error constructor
     this.statusCode = statusCode < 500 && statusCode >= 400 ? statusCode : 400;
-    this.data = null;
-    this.message = message;
+    this.message = error.message;
     this.success = false;
-    this.errors = errors;
+    this.errorname = error.name;
   }
 }
 
@@ -15,9 +14,9 @@ class apiError {
   class notFoundError extends Error{
     constructor(error,message,){
       super(message);
-      this.errorName = error.name;
-      this.message = error.message || `('${error.value._id}') string value not found!` ;
-      this.statusCode = error.statusCode || 404;
+      this.errorName = error.name || "ServerError";
+      this.message = error.message || "Internal server error";
+      this.statusCode = error.statusCode || 500;
       this.success = false;
     }
   }
@@ -39,6 +38,16 @@ class apiError {
     }
   }
   
+  //action error
+  class actionError {
+    constructor(message,name,action,statusCode){
+      this.statusCode = statusCode || 409;
+      this.success = false;
+      this.message = message;
+      this.errorname = name;
+      this.action = action;
+    }
+  }
 
 
-  export { apiError, notFoundError, serverError };
+  export { apiError, notFoundError, serverError, actionError };

@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 
 //verify token
-export const verifyToken = (token,secret=process.env.ACCESS_TOKEN_KEY) =>{
+const verifyToken = (token,secret=process.env.ACCESS_TOKEN_KEY) =>{
 
     //return user info
     return jwt.verify(token,secret,(err,result)=>{
@@ -21,9 +21,12 @@ export const verifyToken = (token,secret=process.env.ACCESS_TOKEN_KEY) =>{
 
 
 //token creat
-export const createToken = async (payload={},remember,secret=process.env.ACCESS_TOKEN_KEY) =>{
+const createToken = (payload={},remember,secret=process.env.ACCESS_TOKEN_KEY) =>{
     //token
-    const token = jwt.sign(payload,secret,{expiresIn:remember?'30d':'1hr'});
+    const token = jwt.sign(payload,secret,{expiresIn:remember?'24hr':'1hr'});
 
     return token;
 }
+
+//export
+export {createToken,verifyToken}

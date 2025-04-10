@@ -1,43 +1,37 @@
 import asyncHanlder from "../middleware/asyncHandler.js"
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
+import { verifyToken } from "../services/auth.js";
 import { apiError, notFoundError } from "../utilities/CustomError.js";
 import { apiresponse } from "../utilities/apiResponse.js";
 
 
 //userinfo 
 const userInfo = asyncHanlder(async (req,res,next) =>{
+    //user id
     const userid = req.params.id;
+    //response
     var response;
 
     //uservalid
-    const userInfo = await User.findById({_id:userid},{likedPosts:0,savedPosts:0}).then(result=>{
-        return {
-            success:true,
-            result
-        }
+    await User.findById({_id:userid},{likedPosts:0,savedPosts:0}).then(async (result)=>{
+        const postcount = await Post.countDocuments({userId:userid})
+        response = new apiresponse("user found successfully",200,{
+                ...result.toObject(),
+                postcount
+            }
+        );
+        return res.status(response.statusCode).send(response)
     }).catch(err=>{
-        return{
-            success:false,
-            err
+        if(err){
+            response = new Error(`the requested user_id:('${userid}') user not exists!`);
+            response.statusCode = 404;
+            response.name = 'UserNotFoundError';
+            return next(response)
         }
     });
 
-    //user not found
-    if(!userInfo.success){
-        const err = new Error(`userId ('${userid}') not found!`);
-        err.statusCode = 404;
-        err.name = 'not found!';
-        return next(err)
-    }
-
-    //post count
-    const postcount = await Post.countDocuments({userId:userid});
-    
-    // user info response
-    response = new apiresponse("user found successfully",200,{...userInfo.result.toObject(),postcount});
-    return res.status(response.statusCode).send(response)
-})
+});
 
 
 //bookmarked post by user
@@ -58,7 +52,6 @@ const getUserPosts = asyncHanlder(async (req,res,next) =>{
             err
         }
     });
-
     //if user is not found
     if(!user.success){
         const err = new Error(`userId ('${userId}') not found!`);
@@ -66,63 +59,131 @@ const getUserPosts = asyncHanlder(async (req,res,next) =>{
         err.name = user.err.name;
         return next(err)
     }
-
     //posts
-    const posts = await Post.find({userId:userId});
-    
-    // if no post found
-    if(posts.length===0){
-        console.log(posts);
-        response = new notFoundError({name:"No Content",message:"user hasn't posted anything yet!"});
-        return res.status(notFoundError.statusCode).json(response)
-    }
-
-    //response
-    response = new apiresponse(`user posts fetched successfully`,200,[...posts]);
-    return res.status(response.statusCode).send(response)
+    await Post.find({userId:userId}).then(result=>{
+        response = new apiresponse(`user posts fetched successfully`,200,[...result]);
+        return res.status(response.statusCode).send(response)
+    }).catch(err=>{
+        if(err){
+            response = new notFoundError({name:"No Content",message:"user hasn't posted anything yet!"});
+            return res.status(notFoundError.statusCode).json(response)
+        }
+    });
 })
 
 
 //user info update
 const userPartialUpdate = asyncHanlder(async (req,res,next) =>{
+    //userid
     const userid = req.params.id;
+    //new info
     const newInfo = req.body;
+    //response
     var response;
-
-    //is required
-    if(!newInfo[Object.keys(newInfo)[0]]){
-        response = new apiError("this field is required!",400);
+    
+    //cookies decoded
+    const userInfo = verifyToken(req.cookies.uid);
+    //cookies expired
+    if(!userInfo.success){
+        response = new Error("Your session expired. Please log in again.");
+        response.statusCode = 401;
+        response.name = "SessionExpiredError";
+        return next(err)
+    }
+    //user access denied
+    if(userid!=userInfo.result.id){
+        response = new apiError(
+            {
+                message:"You don't have permisson to modify this user's informtion",
+                name:"UnauthorizedUserModificationError"
+            },403
+        );
         return res.status(response.statusCode).json(response)
     }
-
+    //user
+    const user = await User.findOne({_id:userid});
+    //user not exists
+    if(!user){
+        response = new Error("User not found!");
+        response.statusCode = 404;
+        response.name = "UserNotFoundError";
+        return next(response)
+    }
     //update info 
     const updateInfo = await Promise.all(
         Object.keys(newInfo).map(async(key)=>{
-            return await User.updateOne({_id:userid},{$set:{[key]:newInfo[key]}}).then(result=>{
-                return result.acknowledged
-            }).catch(err=>{
-                if(err){
-                    return false
-                }
-            })
-        })
-    )
-
+            return await User.updateOne(
+                {
+                    _id:userid
+                },
+                {
+                    $set:{
+                        [key]:newInfo[key]
+                    }
+                }).then(result=>{
+                    return result.acknowledged
+                }).catch(err=>{
+                    if(err){
+                        return false
+                    }
+                })
+            }
+        )
+    );
     //if not updated
-    if(false===updateInfo[0]){
-        response = new apiError(`${Object.keys(newInfo)[0]} is not updated`,400);
-        return res.status(response.statusCode).json(response)
+    if(updateInfo.includes(false)){
+        response = new Error(`userInfo is not updated due to Temporary server issue. Please try later`);
+        response.name = "UpdateFailedError" ;
+        response.statusCode = 400;
+        return next(response)
     }
 
     // response after done updating
-    response = new apiresponse(`${Object.keys(newInfo)[0]} updated successfully`,200);
+    response = new apiresponse(`${Object.keys(newInfo).map(key => key+" ")}updated successfully`,202);
     return res.status(response.statusCode).json(response)
 })
 
 
 //delete user
-const deleteUser = asyncHanlder(async (req,res) =>{
-    res.send(`${req.params.username} is deleted`)
+const deleteUser = asyncHanlder(async (req,res,next) =>{
+    //user id
+    const userId = req.params.id;
+    // response
+    var response;
+
+    //cookies decoded
+    const userInfo = verifyToken(req.cookies.uid);
+    //user had no permit to edit
+    if(userId!=userInfo.result.id){
+        response = new apiError(
+            {
+                message:"You don't have permisson to delete this user",
+                name:"UnauthorizedUserModificationError"
+            },403
+        );
+        return res.status(response.statusCode).json(response)
+    }
+    //user 
+    const user = await User.findOne({_id:userId});
+    //user not exists
+    if(!user){
+        response = new Error("The requested user account not found due to Internal server error!");
+        response.statusCode = 500;
+        response.name = "InternalServerError";
+        return next(response)
+    }
+    //user delete
+    await User.deleteOne({_id:userId}).then(result=>{
+        response = new apiresponse("User deleted Successfully",200);
+        return res.status(response.statusCode).json(response)
+    }).catch(err=>{
+        if(err){
+            response = new Error("Unable to delete your account due to Internal server error during deletion!");
+            response.statusCode = 500;
+            response.name = "UserDeleteFailedError";
+            return next(response)
+        }
+    });
 })
 
 

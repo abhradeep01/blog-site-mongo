@@ -7,7 +7,6 @@ import asyncHanlder from "../middleware/asyncHandler.js";
 import { apiError } from "../utilities/CustomError.js";
 import { apiresponse } from "../utilities/apiResponse.js";
 import path from "path";
-import ejs from 'ejs';
 
 //register function
 const register = asyncHanlder(async(req,res,next)=>{
@@ -16,10 +15,10 @@ const register = asyncHanlder(async(req,res,next)=>{
 
     //validate fields
     if(!name || !username || !email || !password || !img){
-        const err = new Error("fill all required fields!");
-        err.statusCode = 409;
-        err.name = "Conflict";
-        return next(err)
+        response = new Error("fill all required fields!");
+        response.statusCode = 400;
+        response.name = "ValidationError";
+        return next(response)
     }
 
     //user find
@@ -27,25 +26,41 @@ const register = asyncHanlder(async(req,res,next)=>{
         {username:username},
         {email:email}
     ]});
-
     //if user exists already
     if(existUser){
-        response = new apiError("User already exists!",400);
+        response = new apiError(
+            {
+                message:"User already exists!",
+                name:"UserAlreadyExistsError"
+            },409
+        );
         return res.status(response.statusCode).json(response)
     }
-
     //hash password
     const hashPassword = bcrypt.hashSync(password,10);
-
     //user create
-    const newUser = await User.create({
+    await User.create({
         name,
         username,
         email,
         password:hashPassword,
         img
-    })
-    res.json(newUser)
+    }).then(result=>{
+        if(result){
+            response = new apiresponse("User created successfully",201);
+            return res.status(response.statusCode).json(response)
+        }
+    }).catch(err=>{
+        if(err){
+            response = new apiError(
+                {
+                    message:"Error on regitering user service unavailable",
+                    name:"ServiceUnavailable"
+                },500
+            );
+            return res.status(response.statusCode).json(response)
+        }
+    });
 })
 
 
@@ -109,72 +124,82 @@ const setCookieRegister = asyncHanlder(async(req,res,next)=>{
 
 //login function
 const login = asyncHanlder(async (req,res,next) =>{
-    const userInfo = req.body;
+    //body
+    const { username, email, password, remember } = req.body;
+    //response
     var response;
-   
-    //if any field is empty
-    if(!(userInfo.email && userInfo.password)){
-        response = new apiError("please fill all required fields!",400);
+
+    //check field valid
+    if(!((username || email) && password)){
+        response = new apiError({message:"Please fill all required fields!",name:"ValidationError"},400);
         return res.status(response.statusCode).json(response)
     }
-    const user = await User.findOne({email:userInfo.email});
-
-    //user does not exists
-    if(!user){
-        response = new apiError("User doesn't exists",404);
-        return res.status(404).json(response);
+    //user
+    const user = await User.findOne({
+        $or:[
+            {username},
+            {email}
+        ]
+    });
+    //user not exists
+    if(user===null){
+        response = new Error(`User does not exists with this ${email?`email:${email}`:`username:${username}`} or ${email?"email":"usernmae"} is incorrect`);
+        response.name = "UserNotExistsError";
+        response.statusCode = 404;
+        return next(response)
     }
-
-    //password correct
-    const isCorrect = bcrypt.compareSync(userInfo.password,user.password);
-    if(!isCorrect){
-        response = new apiError("Incorrect Password",401);
-        return res.status(401).json(response);
+    //passoword is correct or not
+    if(!bcrypt.compareSync(password,user.password)){
+        response = new apiError(
+            {
+                message:"Incorrect password",
+                name:"InvalidCredenatialsError"
+            },401
+        );
+        return res.status(response.statusCode).json(response)
     }
 
     //token
-    var token ;
-    var response;
-    //short term cookie set
+    var token;
+    //response config
     response = new apiresponse(`Welcome back ${user.username}`,200,{
         id: user._id,
         name: user.name,
         username: user.username,
         profileImg: user.img
     });
-    if(!userInfo.remember){
-        //token
-        token = await createToken({
-            id:user._id,
-            username:user.username,
-            password:user.password
-        });
 
-        //set cookie for short term
-        return res.status(response.statusCode).cookie("uid",token,{
-            maxAge:1000*60*60,
-            expires:new Date(Date.now()+(1000*60*60)),
+    //remember
+    if(!remember){
+        //token 
+        token = createToken({
+            id: user._id,
+            username: user.username
+        });
+        //token for short time
+        return res.cookie("uid",token,{
+            maxAge:3600000,
+            expires:new Date(Date.now()+3600000),
+            sameSite:"strict",
             httpOnly:true,
-            sameSite:'strict',
-            secure:true,
-        }).json(response)
+            secure:true
+        }).status(response.statusCode).json(response)
     }
 
-    //set cookie for long term
-    token = await createToken({
-        id:user._id,
-        username:user.username,
-        password:user.password
+    //token for long time
+    token = createToken({
+        id: user._id,
+        username: user.username
     },true);
-
-    //cookie setting for long term
-    return res.cookie("uid",token,{
-        maxAge:3600000 ,
-        expires:new Date(Date.now()+3600000),
+    //return login
+    return res.cookie('uid',token,{
+        maxAge:86400000,
+        expires:new Date(Date.now()+86400000),
+        sameSite:"strict",
         httpOnly:true,
-        sameSite:'strict',
-        secure:true,
+        secure:true
     }).status(response.statusCode).json(response)
+   
 });
 
 
@@ -212,6 +237,8 @@ const confirmEmail = asyncHanlder(async (req,res,next) =>{
         response = new apiError(messageRes.err,400);
         return res.status(response.statusCode).json(response)
     }
+
+    console.log("24 hours");
 
     //response sent
     response = new apiresponse("OTP send to your email",200,{
@@ -289,7 +316,7 @@ const changePassword = asyncHanlder(async (req,res,next) =>{
 //logout function
 const logout = asyncHanlder(async (req,res,next) =>{
     var response = new apiresponse("logout successfully",200);
-    return res.status(response.statusCode).clearCookie().json(response)
+    return res.clearCookie().status(response.statusCode).json(response)
 })
 
 

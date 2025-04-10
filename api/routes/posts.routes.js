@@ -1,7 +1,5 @@
 import express from 'express';
-import { addPost, deletePost, getPost, getPosts, partialUpdate, updatePost } from '../controllers/posts.controller.js';
-import { bookmarked, liked, unbookmarked, unliked } from '../controllers/interaction.controller.js';
-import { isValid } from '../middleware/isValid.js';
+import { addPost, deletePost, getPost, getPosts, partialUpdate } from '../controllers/posts.controller.js';
 const postRouter = express.Router();
 
 
@@ -15,10 +13,6 @@ postRouter.get("/:id",getPost);
 
 //add post route
 postRouter.post('/addpost',addPost);
-
-
-//update full post route
-postRouter.put('/:id/update',updatePost);
 
 
 //route for update partial post 

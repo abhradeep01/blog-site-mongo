@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import { apiresponse } from "../utilities/apiResponse.js";
 import { apiError, notFoundError } from "../utilities/CustomError.js";
+import { name } from "ejs";
 
 
 //function for getting own profile
@@ -17,7 +18,10 @@ const getProfileInfo = asyncHanlder(async(req,res,next)=>{
 
     //cookie expired
     if(!info.success){
-        response = new apiError("api")
+        response = new Error("Your session expired. Please login again");
+        response.statusCode = 401;
+        response.name = "SessionExpiredError";
+        return next(response)
     }
     //response
     var response;
@@ -33,7 +37,12 @@ const getProfileInfo = asyncHanlder(async(req,res,next)=>{
 
         //if user not found
         if(!user){
-            response = new apiError(`User ${username} not found!`,404);
+            response = new apiError(
+                {
+                    message:`User ${username} not found!`,
+                    name:"UserNotExistsError"
+                },404
+            );
             return res.status(response.statusCode).json(response)
         }
         
@@ -62,7 +71,6 @@ const getUsersPosts = asyncHanlder(async (req,res,next)=>{
     const userinfo = verifyToken(req.cookies.uid);
     //response
     var response;
-    // console.log(userinfo)
 
     // user matches
     if(username===userinfo.result.username){
@@ -71,7 +79,12 @@ const getUsersPosts = asyncHanlder(async (req,res,next)=>{
 
         //if user posts not found
         if(posts.length===0){
-            response = new apiError("You haven't posted any Blog or Article!",404);
+            response = new apiError(
+                {
+                    message:"You haven't posted any Blog or Article!",
+                    name:"NotFound"
+                },404
+            );
             return res.status(response.statusCode).json(response)
         }
 
@@ -89,10 +102,10 @@ const getUsersPosts = asyncHanlder(async (req,res,next)=>{
     }
 
     //error config
-    const err = new Error(`You have no rights to access ${username}'s posts!`);
-    err.statusCode = 403;
-    err.name = 'forbidden';
-    return next(err)
+    response = new Error(`You have no rights to access ${username}'s posts!`);
+    response.statusCode = 403;
+    response.name = 'forbidden';
+    return next(response)
 })
 
 

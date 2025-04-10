@@ -12,6 +12,7 @@ import { isValid } from './middleware/isValid.js';
 import commentRouter from './routes/comment.routes.js';
 import profileRouter from './routes/profile.route.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import interactionRouter from './routes/interaction.routes.js';
 
 
 //app
@@ -39,6 +40,7 @@ app.use('/api/auth',authRouter);
 app.use('/api/upload',uploadRouter);
 app.use('/api/comment',isValid,commentRouter);
 app.use('/api/profile',isValid,profileRouter);
+app.use('/api/interaction',isValid,interactionRouter);
 app.all('*',isValid,(req,res,next)=>{
     const err = new Error(`can't find ${req.originalUrl} route on the server!`);
     err.status = 'not found';

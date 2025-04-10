@@ -23,9 +23,10 @@ const postSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        visit:{
-            type:Number,
-            default:0
+        visits:{
+            type:[Schema.Types.ObjectId],
+            ref:'User',
+            default:[]
         },
         liked:{
             type:[Schema.Types.ObjectId],

@@ -1,8 +1,10 @@
 import cloudinary from "../config/cloudinary.js";
+import asyncHanlder from "../middleware/asyncHandler.js";
+import { apiresponse } from "../utilities/apiResponse.js";
 
 
 //image upload of user
-export const userImgUpload = async (req,res) =>{
+const userImgUpload = asyncHanlder(async (req,res,next) =>{
     await cloudinary.uploader.upload(req.body.imgurl,{
         resource_type:'image',
         public_id: 'img',
@@ -14,35 +16,41 @@ export const userImgUpload = async (req,res) =>{
             aspect_ratio:'1:1'
         }
     }).then(result=>{
-        res.status(200).json(result.secure_url)
+        var response = new apiresponse("user image uploaded successfully",201,result.secure_url);
+        return res.status(response.statusCode).json(response)
     }).catch(err=>{
-        res.status(400).send(err)
+        if(err){
+            const error = new Error("error during uploading user image to server!");
+            error.statusCode = 503;
+            error.name = "UploadServiceUnavailable";
+            return next(error)
+        }
     })
-}
+})
 
 
 //user image delete
-export const userImgDelete = async (req,res) =>{
-    await cloudinary.api.delete_resources(imguri,{
+const userImgDelete = asyncHanlder(async (req,res,next) =>{
+    await cloudinary.api.delete_resources(req.body.imguri,{
         type:'upload',
         resource_type:'image'
-    }).then(res=>{
-        console.log(res);
-        return {
-            success:true
-        }
+    }).then(result=>{
+        var response = new apiresponse("user image deleted successfully",202);
+        return res.status(response.statusCode).json(response)
     }).catch(err=>{
-        console.log(err);
-        return {
-            success:false
+        if(err){
+            const error = new Error("error during on deleting user image from server");
+            error.statusCode = 503;
+            error.name = "ServiceUnavailableError";
+            return next(error)
         }
     });
-}
+})
 
 
 //post image upload
-export const postImgUpload = async (req,res) =>{
-    await cloudinary.uploader.upload(imguri,{
+const postImgUpload = asyncHanlder(async (req,res,next) =>{
+    await cloudinary.uploader.upload(req.body.imguri,{
         resource_type:'image',
         public_id:'post',
         overwrite:true,
@@ -53,33 +61,36 @@ export const postImgUpload = async (req,res) =>{
             aspect_ratio:'16:9'
         }
     }).then(result=>{
-        return {
-            url: result.secure_url,
-            success:true
-        }
+        var response = new apiresponse("post image uploaded successfully",201,result.secure_url);
+        return res.status(response.statusCode).json(response)
     }).catch(err=>{
-        console.log(err);
-        return{
-            success:false
+        if(err){
+            const error = new Error("error during uploading post image to server!");
+            error.statusCode = 503;
+            error.name = "ServiceUnavailableError";
+            return next(error)
         }
     })
-}
+})
 
 
 //post delete
-export const postDelete = async (req,res) =>{
-    await cloudinary.api.delete_resources([imguri],{
+const postDelete = asyncHanlder(async (req,res,next) =>{
+    await cloudinary.api.delete_resources([req.body.imguri],{
         resource_type:'image',
         type:'upload'
-    }).then(res=>{
-        console.log(res);
-        return {
-            success:true
-        }    
+    }).then(result=>{
+        var response = new apiresponse("post image deleted successfully",202)
+        return res.status(response.statusCode).json(response)
     }).catch(err=>{
-        console.log(err);
-        return {
-            success:false
+        if(err){
+            const error = new Error("error during on deleting post image from server");
+            error.statusCode = 503;
+            error.name = "ServiceUnavailableError";
+            return next(error)
         }
     })
-}
+})
+
+//export
+export { userImgUpload, userImgDelete, postImgUpload, postDelete };
