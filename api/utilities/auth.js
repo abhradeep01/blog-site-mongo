@@ -23,7 +23,7 @@ const verifyToken = (token,secret=process.env.ACCESS_TOKEN_KEY) =>{
 //token creat
 const createToken = (payload={},remember,secret=process.env.ACCESS_TOKEN_KEY) =>{
     //token
-    const token = jwt.sign(payload,secret,{expiresIn:remember?'24hr':'1hr'});
+    const token = jwt.sign(payload,secret,{expiresIn:remember?'24h':'1h'});
 
     return token;
 }

@@ -1,9 +1,9 @@
-import asyncHanlder from "../middleware/asyncHandler.js"
+import asyncHanlder from "../utilities/asyncHandler.js"
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
-import { verifyToken } from "../services/auth.js";
-import { apiError, notFoundError } from "../utilities/CustomError.js";
-import { apiresponse } from "../utilities/apiResponse.js";
+import { verifyToken } from "../utilities/auth.js";
+import { apiError, notFoundError } from "../helper/CustomError.js";
+import { apiresponse } from "../helper/apiResponse.js";
 
 
 //userinfo 

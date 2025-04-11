@@ -1,6 +1,6 @@
-import { verifyToken } from "../services/auth.js";
-import { apiError } from "../utilities/CustomError.js";
-import asyncHanlder from "./asyncHandler.js";
+import { verifyToken } from "../utilities/auth.js";
+import { apiError } from "../helper/CustomError.js";
+import asyncHanlder from "../utilities/asyncHandler.js";
 
 //is valid with 
 export const isValid = asyncHanlder(async (req,res,next) =>{

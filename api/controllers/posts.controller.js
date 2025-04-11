@@ -1,9 +1,9 @@
 import Post from "../models/post.model.js";
-import { verifyToken } from "../services/auth.js";
+import { verifyToken } from "../utilities/auth.js";
 import User from '../models/user.model.js';
-import asyncHandler from "../middleware/asyncHandler.js";
-import { apiresponse } from "../utilities/apiResponse.js";
-import { apiError, notFoundError } from "../utilities/CustomError.js";
+import asyncHandler from "../utilities/asyncHandler.js";
+import { apiresponse } from "../helper/apiResponse.js";
+import { apiError, notFoundError } from "../helper/CustomError.js";
 import { name } from "ejs";
 
 

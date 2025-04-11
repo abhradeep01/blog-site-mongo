@@ -1,6 +1,6 @@
 import cloudinary from "../config/cloudinary.js";
-import asyncHanlder from "../middleware/asyncHandler.js";
-import { apiresponse } from "../utilities/apiResponse.js";
+import asyncHanlder from "../utilities/asyncHandler.js";
+import { apiresponse } from "../helper/apiResponse.js";
 
 
 //image upload of user

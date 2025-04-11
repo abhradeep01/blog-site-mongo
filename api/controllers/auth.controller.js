@@ -1,11 +1,11 @@
 import User from "../models/user.model.js";
-import { createToken } from "../services/auth.js";
+import { createToken } from "../utilities/auth.js";
 import { sendVarificationCode } from "../services/nodeMail.js";
 import bcrypt from 'bcryptjs';
 import { otpgenerate } from "../utilities/otpgenarate.js";
-import asyncHanlder from "../middleware/asyncHandler.js";
-import { apiError } from "../utilities/CustomError.js";
-import { apiresponse } from "../utilities/apiResponse.js";
+import asyncHanlder from "../utilities/asyncHandler.js";
+import { apiError } from "../helper/CustomError.js";
+import { apiresponse } from "../helper/apiResponse.js";
 import path from "path";
 
 //register function
