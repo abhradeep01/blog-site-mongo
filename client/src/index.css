@@ -1,1 +1,20 @@
-@import 'tailwindcss'
+@import url('https://fonts.googleapis.com/css2?family=Advent+Pro:ital,wght@0,100..900;1,100..900&family=Alata&family=Antic+Slab&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Didact+Gothic&family=Gruppo&family=News+Cycle:wght@400;700&family=PT+Sans+Caption:wght@400;700&family=Raleway:ital,wght@0,100..900;1,100..900&family=Roboto:wght@100..900&family=Sen:wght@400..800&family=Underdog&family=Varela+Round&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-underdog: "Underdog", system-ui;
+  --font-gruppo:"Gruppo", sans-serif;
+  --font-advent:"Advent Pro", sans-serif;
+  --font-gothicregular: "Didact Gothic", sans-serif;
+  --font-varelaround:"Varela Round", sans-serif;
+  --font-anticslab:"Antic Slab", serif;
+  --font-comicneue:"Comic Neue", cursive;
+  --font-ptsanscaption:"PT Sans Caption", sans-serif;
+  --font-cycleregular:"News Cycle", sans-serif;
+  --font-sen:"Sen", sans-serif;
+  /* --breakpoint-*:initial;
+  --breakpoint-mobile:30rem;
+  --breakpoint-tab-sm:768px;
+  --breakpoint-tab-md:820px;
+  --breakpoint-tab-lg:1024px; */
+}

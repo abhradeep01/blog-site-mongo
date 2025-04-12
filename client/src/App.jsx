@@ -1,18 +1,10 @@
-import { Route, Routes } from 'react-router-dom';
-import './App.css';
-import Layout from './components/Layout';
-import ForgetPassword from './pages/ForgetPassword';
-import VarificationCode from './pages/VarificationCode';
-import ConfirmPassword from './pages/ConfirmPassword';
-import LogIn from './pages/LogIn';
-import SignUp from './pages/SignUp';
-import Home from './pages/Home';
-import PostPage from './pages/PostPage';
-import Profile from './pages/Profile';
-import ProfilePosts from './components/ProfilePosts';
-import ProfileSavedPost from './components/ProfileSavedPost';
-import ProfileLikedPosts from './components/ProfileLikedPosts';
-import NotFound from './components/NotFound';
+import './App.css'
+import { Route, Routes } from 'react-router'
+import NavBar from './components/navigation/NavBar'
+import Home from './pages/Home'
+import Layout from './components/Layout'
+import Login from './pages/Login'
+import Register from './pages/Register'
 
 function App() {
 
@@ -20,20 +12,10 @@ function App() {
     <>
       <Routes>
         <Route path='/' element={<Layout/>} >
-          <Route index element={<Home/>} />
-          <Route path='/:id' element={<PostPage/>} />
-          <Route path='/profile/:username' element={<Profile/>}>
-            <Route index element={<ProfilePosts/>} />
-            <Route path='saved' Component={<ProfileSavedPost/>} />
-            <Route path='liked' element={<ProfileLikedPosts/>} />
-          </Route>
+          <Route index path='/' element={<Home/>} />
         </Route>
-        <Route path='/forgetpassword' element={<ForgetPassword />} />
-        <Route path='/verify' element={<VarificationCode/>}/>
-        <Route path='/setpassword' element={<ConfirmPassword/>}/>
-        <Route path='/login' element={<LogIn/>}/>
-        <Route path='/signup' element={<SignUp/>} />
-        <Route path='*' element={<NotFound/>}/>
+        <Route path='/login' element={<Login/>}/>
+        <Route path='/register' element={<Register/>}/>
       </Routes>
     </>
   )
