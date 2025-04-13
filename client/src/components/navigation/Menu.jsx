@@ -2,12 +2,13 @@ import { Button, FormControlLabel, IconButton, Switch } from '@mui/material'
 import React from 'react'
 import { LoginIcon, LogoutIcon, MenuIcon, RemoveIcon } from '../../utilities/icons'
 import { navContent } from '../../utilities/content';
+import useTheme from '../../hooks/useTheme';
 
 function Menu() {
     //show menu
     const [show,setMenu] = React.useState(false);
-    //theme change
-    const [dark,setDark] = React.useState(false);
+    //theme
+    const { dark, toggleTheme } = useTheme()
 
   return (
     <>
@@ -33,7 +34,7 @@ function Menu() {
                 <FormControlLabel
                     control={
                         <Switch
-                            onChange={()=>setDark(!dark)}
+                            onChange={toggleTheme}
                         />
                     }
                     label={
@@ -43,16 +44,16 @@ function Menu() {
                     }
                     sx={{display:"flex",flexDirection:"row",alignItems:"center"}}
                 />
-                <Button href='/login' variant='contained' color='success' size='small' sx={{height:"fit-content",textTransform:'capitalize',fontWeight:'400',fontSize:"0.9rem"}} 
-                    endIcon={<LoginIcon className="text-white size-5 -ml-1.5"/>}
-                >
-                  login
-                </Button>
-                <Button color='error' variant='contained' size='small' sx={{height:"fit-content",textTransform:'capitalize',fontWeight:'400',fontSize:"0.9rem"}}
-                  endIcon={<LogoutIcon className="size-5 -ml-1.5 text-white"/>}
-                >
-                  logout
-                </Button>
+                <button className='bg-emerald-600 px-1.5 py-0.5 rounded font-varelaround font-medium'>
+                    <a href="/upload" className='flex flex-row items-center text-[0.925rem] capitalize text-white'>
+                      login <LoginIcon className="text-white size-5 ml-1.5"/>
+                    </a>
+                </button>
+                <button className='bg-red-500 px-1.5 py-0.5 rounded font-varelaround font-medium'>
+                    <a href="/upload" className='flex flex-row items-center text-[0.925rem] capitalize text-white'>
+                      logout <LogoutIcon className="text-white size-5 ml-1.5"/>
+                    </a>
+                </button>
             </div>
         </div>
     </>

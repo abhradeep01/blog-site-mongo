@@ -8,8 +8,8 @@ import { UploadIcon } from '../utilities/icons';
 
 function Register() {
   return (
-    <div className="w-[450px] mt-[5rem] py-[2rem] px-[1.5rem] max-sm:w-[99%] mobile:border-red-500 flex flex-col justify-center items-center shadow shadow-slate-200 bg-amber-200 rounded">
-        <h2 className="font-varelaround text-lg text-emerald-600 font-bold mb-4">Register</h2>
+    <div className="w-[450px] mt-[5rem] py-[2rem] px-[1.5rem] max-sm:w-[99%] flex flex-col justify-center items-center shadow shadow-slate-200 bg-amber-200 rounded">
+        <h2 className="font-varelaround text-lg text-emerald-600 font-medium mb-4">Register</h2>
         <div className="w-full flex flex-row justify-between mb-3">
             <img src="https://blog.hootsuite.com/wp-content/uploads/2024/03/TikTok-algorithm-556x556.png" alt="" className='w-[28%] max-sm:w-[35%] aspect-square rounded-sm' />
             <div className="w-[55%] flex justify-center items-center">

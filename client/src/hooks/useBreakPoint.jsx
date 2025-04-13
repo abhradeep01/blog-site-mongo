@@ -17,7 +17,7 @@ function useBreakPoint() {
   return {
     isPhone: width < 640,
     isSmallTab: width < 768 && width >= 640,
-    isTab: width < 1025 && width >= 768,
+    isTab: width <= 1024 && width >= 768,
     isLaptop: width > 1024 && width < 1280 ,
     isDesktop : width > 1280 && width < 1536,
     isLargeDesktop: width >= 1536 ,

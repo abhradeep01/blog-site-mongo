@@ -18,3 +18,5 @@
   --breakpoint-tab-md:820px;
   --breakpoint-tab-lg:1024px; */
 }
+
+@custom-variant dark (&:where(.dark, .dark *))

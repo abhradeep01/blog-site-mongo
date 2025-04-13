@@ -1,9 +1,26 @@
 import React from 'react'
 
 function useTheme() {
-  return (
-    <div>useTheme</div>
-  )
+  //theme
+  const [dark,setDark]= React.useState(false);
+
+  //useeffect
+  React.useEffect(()=>{
+    if(dark){
+      document.documentElement.classList.add('dark');
+    }else{
+      document.documentElement.classList.remove('dark');
+    }
+  },[dark]);
+
+  const toggleTheme = () =>{
+    setDark(!dark);
+  }
+
+  return {
+    dark,
+    toggleTheme
+  }
 }
 
 export default useTheme;
