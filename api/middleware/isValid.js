@@ -9,10 +9,8 @@ export const isValid = asyncHanlder(async (req,res,next) =>{
 
     //if token doesn't exists
     if(!token){
-        response = new Error("Unauthenticated User");
-        response.statusCode = 401;
-        response.name = "Unauthenticated"
-        return next(response)
+        response = new apiError({message:"Unauthenticated User",name:"Unauthenticated"},401);
+        return res.status(response.statusCode).json(response)
     }
 
     //decode token

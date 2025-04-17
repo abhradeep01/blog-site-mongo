@@ -24,7 +24,18 @@ const userSchema = new mongoose.Schema(
             type: String,
             required:[true,"img is required field!"]
         },
-        bio:{type:String},
+        bio:{
+            type:String
+        },
+        otp:{
+            type:Number,
+            default:null
+        },
+        isVerified:{
+            type:Boolean,
+            required:true,
+            default:false
+        },
         savedPosts:{ 
             type: [Schema.Types.ObjectId,],
             ref:'Post',
