@@ -1,5 +1,6 @@
-import { changePassword, login, logout, register, resend, verifyCode } from '../controllers/auth.controller.js';
+import { changePassword, findUser, login, logout, register, resend, verifyCode } from '../controllers/auth.controller.js';
 import express from 'express';
+import authValid from '../middleware/authValid.js';
 const authRouter = express.Router();
 
 
@@ -11,16 +12,20 @@ authRouter.post('/register',register);
 authRouter.post('/login',login);
 
 
+//find user route using username or email
+authRouter.post('/find',findUser);
+
+
 //forget password route
-authRouter.post('/resend',resend);
+authRouter.post('/resend',authValid,resend);
 
 
 //set cookie for user
-authRouter.post('/verify',verifyCode);
+authRouter.post('/verify',authValid,verifyCode);
 
 
 //change password route
-authRouter.patch('/changepassword',changePassword);
+authRouter.patch('/changepassword',authValid,changePassword);
 
 
 //logout route

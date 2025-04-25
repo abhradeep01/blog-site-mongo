@@ -1,5 +1,5 @@
 import User from "../models/user.model.js";
-import { createToken } from "../utilities/auth.js";
+import { createToken, verifyToken } from "../utilities/auth.js";
 import { sendVarificationCode } from "../services/nodeMail.js";
 import bcrypt from 'bcryptjs';
 import { otpgenerate } from "../utilities/otpgenarate.js";
@@ -68,16 +68,24 @@ const register = asyncHanlder(async(req,res,next)=>{
         result.otp = otp;
         await result.save();
         if(result){
+            const token = createToken(
+                {
+                    email: result.email,
+                    remember: false,
+                    purpose:"register"
+                }
+            )
             response = new apiresponse(
                 `verification code send successfully to ${result.email}`,
-                201,
-                {
-                    email:result.email,
-                    purpose:"register",
-                    remember:true
-                }
+                201
             );
-            return res.status(response.statusCode).json(response)
+            return res.cookie('auth_id',token,{
+                maxAge:3600000,
+                expires:new Date(Date.now+3600000),
+                sameSite: "strict",
+                httpOnly: true,
+                secure: true
+            }).status(response.statusCode).json(response)
         }
     }).catch(err=>{
         if(err){
@@ -153,25 +161,47 @@ const login = asyncHanlder(async (req,res,next) =>{
     //otp saved
     user.otp = otp;
     await user.save();
-
+    //token
+    const token = createToken(
+        {
+            email,
+            purpose:"login",
+            remember
+        }
+    )
     //response config
-    response = new apiresponse("Verification code send successfully to your registered email",200,{
-        email: user.email,
-        purpose:"login",
-        remember
-    })
-    return res.status(response.statusCode).json(response)
+    response = new apiresponse(
+        "Verification code send successfully to your registered email",
+        200
+    );
+    return res.cookie('auth_id',token,{
+        maxAge:3600000,
+        expires:new Date(Date.now+3600000),
+        sameSite: "strict",
+        httpOnly: true,
+        secure: true
+    }).status(response.statusCode).json(response)
 });
 
 
-//forget password function
-const resend = asyncHanlder(async (req,res,next) =>{
-    //email
+//find user using email or username
+const findUser = asyncHanlder(async (req,res,next)=>{
+    // username or email
     const { email, username } = req.body;
     //response
     var response;
 
-    //check if email exists in database
+    //email or username not sent
+    if(!email && !username){
+        response = new apiError(
+            {
+                message:"Please enter username or email of your account!",
+                name:"FieldEmptyError"
+            },400
+        );
+        return res.status(response.statusCode).json(response)
+    }
+    //user 
     const user = await User.findOne(
         {
             $or:[
@@ -180,15 +210,69 @@ const resend = asyncHanlder(async (req,res,next) =>{
             ]
         }
     );
+    //user not found
+    if(user===null){
+        response = new apiError(
+            {
+                message:`User not exists with this ${username?"username":"email"} ${username?username:email}`,
+                name:"UserNotFoundError!"
+            },404
+        );
+        return res.status(response.statusCode).json(response)
+    }
+    //onetime password
+    const otp = otpgenerate();
+    //config email
+    const data = await ejs.renderFile(path.join(import.meta.dirname,"../views/templates/email/otpLoginMail.ejs"),{email:user.email,otp});
+    //nodemailer email sent
+    const messageRes = await sendVarificationCode(user.email,"Email varification for login",data); 
+    //email not sent
+    if(!messageRes.success){
+        response = new apiError(
+            {
+                message:`Failed to send varification code!`,
+                name:"EmailDeliveryError"
+            },400
+        );
+        return res.status(response.statusCode).json(response)
+    }
+    //otp saved 
+    user.otp = otp;
+    await user.save();
+    //token
+    const token = createToken(
+        {
+            email:user.email,
+            purpose:"forget password"
+        }
+    );
+
+    //response res
+    response = new apiresponse(`Your account has been found and OTP send to your ${user.email}`,200);
+    return res.cookie('auth_id',token,{
+        maxAge:3600000,
+        expires:new Date(Date.now+3600000),
+        sameSite: "strict",
+        httpOnly: true,
+        secure: true
+    }).status(response.statusCode).json(response)
+})
+
+
+//forget password function
+const resend = asyncHanlder(async (req,res,next) =>{
+    //response
+    var response;
+    //auth info
+    const authInfo = verifyToken(req.cookies.auth_id);
+
+    //check if email exists in database
+    const user = await User.findOne({email:authInfo.result.email});
     //if email is invalid
     if(!user){
-        const err = new Error(
-            email?
-            'Invalid email please insert valid email!':
-            "Invalid username please insert valid username"
-        );
+        const err = new Error('Invalid email please insert valid email!');
         err.statusCode = 400;
-        err.name = email?'InvalidEmailError':"InvalidUsernameError";
+        err.name = 'InvalidEmailError';
         return next(err)
     }
     //onetime password
@@ -201,7 +285,8 @@ const resend = asyncHanlder(async (req,res,next) =>{
     if(!messageRes.success){
         response = new apiError(
             {
-                message:"verification code can't send to your email"
+                message:`Failed to send varification code!`,
+                name:"EmailDeliveryError"
             },400
         );
         return res.status(response.statusCode).json(response)
@@ -209,20 +294,22 @@ const resend = asyncHanlder(async (req,res,next) =>{
     //otp saved 
     user.otp = otp;
     await user.save();
-
     //response sent
-    response = new apiresponse("OTP send to your email id successfully",200);
+    response = new apiresponse("OTP send to your email successfully",200);
+    //response
     return res.status(response.statusCode).json(response)
 })
 
 
 //set cookie for user
 const verifyCode = asyncHanlder(async(req,res,next)=>{
-    const { otp, purpose, remember, email } = req.body;
+    const { otp } = req.body;
     //response
     var response;
     //token
     var token;
+    //auth info
+    const authInfo = verifyToken(req.cookies.auth_id);
     
     if(otp === null){
         response = new apiError(
@@ -234,7 +321,7 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
         return res.status(response.statusCode).json(response)
     }
     //user
-    const user = await User.findOne({email:email});
+    const user = await User.findOne({email:authInfo.result.email});
     //user not exists
     if(!user){
         response = new Error("User not exists with this email!");
@@ -261,12 +348,12 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
     });
     //user otp to null
     user.otp = null;
-    if(purpose==="register"){
+    if(authInfo.result.purpose==="register"){
         user.isVerified = true;
     }
     await user.save();
     //if for one time
-    if(!remember){
+    if(!authInfo.result.remember){
         token = createToken({
             id: user._id,
             username: user.username,
@@ -286,27 +373,36 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
         id: user._id,
         username: user.username,
         email: user.email
-    });
-
-    return res.cookie("uid",token,{
+    },true);
+    //response
+    res.clearCookie('auth_id',{
+        httpOnly:true,
+        secure:true,
+        sameSite:"strict",
+        path:'/'
+    })
+    res.cookie("uid",token,{
         maxAge:86400000,
         expires: new Date(Date.now()+86400000),
         sameSite:"strict",
         httpOnly: true,
         secure: true
     }).status(200).json(response);
+    return res.status(response.statusCode).json(response)
 })
 
 
 //change passoword function
 const changePassword = asyncHanlder(async (req,res,next) =>{
     //body
-    const { email, newpassword } = req.body;
+    const { newpassword } = req.body;
     // response
     var response;
+    //auth
+    const authInfo = verifyToken(req.cookies.auth_id);
 
-    //update password email 
-    const user = await User.findOne({email:email});
+    //user
+    const user = await User.findOne({email:authInfo.result.email});
     //user not exists
     if(!user){
         response = new apiError(
@@ -366,4 +462,4 @@ const logout = asyncHanlder(async (req,res,next) =>{
 
 
 //export 
-export { register, login, resend, changePassword, verifyCode, logout}
+export { register, login, findUser, resend, changePassword, verifyCode, logout}
