@@ -30,7 +30,12 @@ const getPostsAllComments = asyncHanlder(async (req,res,next)=>{
     //user id
     const userId = userInfo.result.id;
     //post does exsits
-    const user = await User.findOne({_id:userId},'0');
+    const user = await User.findOne(
+        {
+            _id:userId
+        },
+        '0'
+    );
     //user does not exists
     if(!user){
         response = new Error("The requested user does not exists!");
@@ -39,7 +44,12 @@ const getPostsAllComments = asyncHanlder(async (req,res,next)=>{
         return next(response)
     }
     //post
-    const post = await Post.findOne({_id:postId},'0');
+    const post = await Post.findOne(
+        {
+            _id:postId
+        },
+        '0'
+    );
     //post does not exists
     if(!post){
         response = new Error("The requested post does not exists!");
@@ -48,7 +58,11 @@ const getPostsAllComments = asyncHanlder(async (req,res,next)=>{
         return next(response)
     }
     //comments
-    const postComments = await Comment.find({post:postId});
+    const postComments = await Comment.find(
+        {
+            post:postId
+        }
+    );
     //no comments found
     if(postComments.length===0){
         response = new Error("No Comments found yet!");
@@ -58,7 +72,11 @@ const getPostsAllComments = asyncHanlder(async (req,res,next)=>{
     }
 
     //response config
-    response = new apiresponse("Posts commets found successfully",200,[...postComments]);
+    response = new apiresponse(
+        "Posts commets found successfully",
+        200,
+        [...postComments]
+    );
     return res.status(response.statusCode).json(response)
 });
 
@@ -85,7 +103,12 @@ const addComment = asyncHanlder(async(req,res,next)=>{
     //user id
     const userId = userInfo.result.id;
     //user
-    const user = await User.findOne({_id:userId},"0");
+    const user = await User.findOne(
+        {
+            _id:userId
+        },
+        "0"
+    );
     //if user not exists 
     if(!user){
         response = new Error("the requested user does not exists!");
@@ -94,7 +117,14 @@ const addComment = asyncHanlder(async(req,res,next)=>{
         return next(response)
     }
     //post
-    const post = await Post.findOne({_id:postId},{commented:1});
+    const post = await Post.findOne(
+        {
+            _id:postId
+        },
+        {
+            commented:1
+        }
+    );
     //post does not exists
     if(!post){
         response = new Error("The post you're trying to comment on doesn't exist");
@@ -131,7 +161,13 @@ const addComment = asyncHanlder(async(req,res,next)=>{
     post.commented.push(userId);
     await post.save().then(result=>{
         if(result){
-            response = new apiresponse("Commented to post successfully",201,{...newComment.result.toObject()});
+            response = new apiresponse(
+                "Commented to post successfully",
+                201,
+                {
+                    ...newComment.result.toObject()
+                }
+            );
             return res.status(response.statusCode).json(response)
         }
     }).catch(err=>{
@@ -164,7 +200,12 @@ const editComment = asyncHanlder(async(req,res,next)=>{
         return next(response)
     }
     //user
-    const user = await User.findOne({_id:userInfo.result.id},"0").then(result=>{
+    const user = await User.findOne(
+        {
+            _id:userInfo.result.id
+        },
+        "0"
+    ).then(result=>{
         return{
             success:true,
             result
@@ -183,7 +224,11 @@ const editComment = asyncHanlder(async(req,res,next)=>{
         return next(response)
     }
     // comment
-    const comment = await Comment.findOne({_id:commentId});
+    const comment = await Comment.findOne(
+        {
+            _id:commentId
+        }
+    );
     // if comment not exists
     if(!comment){
         response = new Error("requested comment not found!");
@@ -202,14 +247,29 @@ const editComment = asyncHanlder(async(req,res,next)=>{
         return res.status(response.statusCode).json(response)
     }
     //post update
-    await Comment.updateOne({_id:commentId},{
-        $set:{
-            description:newtext
+    await Comment.updateOne(
+        {
+            _id:commentId
+        },
+        {
+            $set:{
+                description:newtext
+            }
         }
-    }).then(async result=>{
+    ).then(async result=>{
         if(result){
-            const newComment = await Comment.findOne({_id:commentId});
-            response = new apiresponse("Comment update successfully",202,{...newComment.toObject()});
+            const newComment = await Comment.findOne(
+                {
+                    _id:commentId
+                }
+            );
+            response = new apiresponse(
+                "Comment update successfully",
+                202,
+                {
+                    ...newComment.toObject()
+                }
+            );
             return res.status(response.statusCode).json(response)
         }
     }).catch(err=>{
@@ -233,7 +293,11 @@ const deleteComment = asyncHanlder(async(req,res,next)=>{
     var response;
 
     //user
-    const user = await User.findOne({_id:userInfo.result.id});
+    const user = await User.findOne(
+        {
+            _id:userInfo.result.id
+        }
+    );
     //if user not exists
     if(!user){
         response = new Error("the requested user does no exists!");
@@ -242,7 +306,11 @@ const deleteComment = asyncHanlder(async(req,res,next)=>{
         return next(response)
     }
     //comment
-    const comment = await Comment.findOne({_id:commentId});
+    const comment = await Comment.findOne(
+        {
+            _id:commentId
+        }
+    );
     //if comment not found
     if(!comment){
         response = new Error("This requested comment for deletion does not exists!");
@@ -261,7 +329,11 @@ const deleteComment = asyncHanlder(async(req,res,next)=>{
         return res.status(response.statusCode).json(response)
     }
     //delete comment
-    await Comment.deleteOne({_id:commentId}).then(result=>{
+    await Comment.deleteOne(
+        {
+            _id:commentId
+        }
+    ).then(result=>{
         if(result){
             response = new apiresponse("Your comment deleted successfully",202);
             return res.status(response.statusCode).json(response)

@@ -26,9 +26,23 @@ const liked = asyncHanlder(async (req,res,next) =>{
     //user id
     const userId = userInfo.result.id;
     //user
-    const user = await User.findOne({_id:userId},{likedPosts:1});
+    const user = await User.findOne(
+        {
+            _id:userId
+        },
+        {
+            likedPosts:1
+        }
+    );
     //post
-    const post = await Post.findOne({_id:postId},{liked:1});
+    const post = await Post.findOne(
+        {
+            _id:postId
+        },
+        {
+            liked:1
+        }
+    );
     //if user not liked post
     if(!post.liked.includes(userId) && !user.likedPosts.includes(postId)){
         //userid add to post
@@ -39,7 +53,10 @@ const liked = asyncHanlder(async (req,res,next) =>{
         await user.save();
 
         //response config
-        response = new apiresponse("post liked successfully",200);
+        response = new apiresponse(
+            "post liked successfully",
+            200
+        );
         return res.status(response.statusCode).json(response)
     }
 
@@ -74,9 +91,23 @@ const unliked = asyncHanlder(async (req,res,next) =>{
     //userid
     const userId = userInfo.result.id;
     //user
-    const user = await User.findOne({_id:userId},{likedPosts:1});
+    const user = await User.findOne(
+        {
+            _id:userId
+        },
+        {
+            likedPosts:1
+        }
+    );
     //post 
-    const post = await Post.findOne({_id:postId},{liked:1});
+    const post = await Post.findOne(
+        {
+            _id:postId
+        },
+        {
+            liked:1
+        }
+    );
 
     //if user liked already
     if(user.likedPosts.includes(postId) && post.liked.includes(userId)){
@@ -88,7 +119,10 @@ const unliked = asyncHanlder(async (req,res,next) =>{
         await post.save();
 
         //response config
-        response = new apiresponse(`post unliked by ${userInfo.result.username}`,200);
+        response = new apiresponse(
+            `post unliked by ${userInfo.result.username}`,
+            200
+        );
         return res.status(response.statusCode).json(response)
     }
 
@@ -123,9 +157,23 @@ const saved = asyncHanlder(async (req,res,next) =>{
     //user id
     const userId = userInfo.result.id;
     //user
-    const user = await User.findOne({_id:userId},{savedPosts:1});
+    const user = await User.findOne(
+        {
+            _id:userId
+        },
+        {
+            savedPosts:1
+        }
+    );
     //post 
-    const post = await Post.findOne({_id:postId},{bookmarked:1});
+    const post = await Post.findOne(
+        {
+            _id:postId
+        },
+        {
+            bookmarked:1
+        }
+    );
 
     //if post not saved by this user
     if(!user.savedPosts.includes(postId) && !post.bookmarked.includes(userId)){
@@ -137,7 +185,10 @@ const saved = asyncHanlder(async (req,res,next) =>{
         await post.save();
 
         //response config
-        response = new apiresponse(`posts saved successfully by ${userInfo.result.username}`,200);
+        response = new apiresponse(
+            `posts saved successfully by ${userInfo.result.username}`,
+            200
+        );
         return res.status(response.statusCode).json(response)
     }
 
@@ -172,9 +223,23 @@ const unsaved = asyncHanlder(async (req,res,next) =>{
     //user id
     const userId = userInfo.result.id;
     //user
-    const user = await User.findOne({_id:userId},{savedPosts:1});
+    const user = await User.findOne(
+        {
+            _id:userId
+        },
+        {
+            savedPosts:1
+        }
+    );
     //post
-    const post = await Post.findOne({_id:postId},{bookmarked:1});
+    const post = await Post.findOne(
+        {
+            _id:postId
+        },
+        {
+            bookmarked:1
+        }
+    );
     //if post is saved by this user
     if(user.savedPosts.includes(postId) && post.bookmarked.includes(userId)){
         //post removed from user
@@ -185,7 +250,10 @@ const unsaved = asyncHanlder(async (req,res,next) =>{
         await post.save()
 
         //response config
-        response = new apiresponse(`post removed from bookmarked successfully by ${userInfo.result.username}`,200);
+        response = new apiresponse(
+            `post removed from bookmarked successfully by ${userInfo.result.username}`,
+            200
+        );
         return res.status(response.statusCode).json(response)
     }
 

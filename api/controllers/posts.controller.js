@@ -21,17 +21,62 @@ const getPosts = asyncHandler(async (req,res,next) =>{
     //category wise posts return
     if(type){
         // posts with specified category
-        posts = await Post.find({category:type},{bookmarked:0},{limit:4}).populate({path:'userId',select:{username:1}});
+        posts = await Post.find(
+            {
+                category:type
+            },
+            {
+                bookmarked:0
+            },
+            {
+                limit:4
+            }
+        ).populate(
+            {
+                path:'userId',
+                select:{
+                    username:1
+                }
+            }
+        );
         //post ads with specified category
-        ads = await Post.find({category:type},{title:1,img:1,category:1,updatedAt:1},{limit:4});
+        ads = await Post.find(
+            {
+                category:type
+            },
+            {
+                title:1,
+                img:1,
+                category:1,
+                updatedAt:1
+            },
+            {
+                limit:4
+            }
+        );
         //post banner with specified category
-        banners = await Post.find({category:type},{title:1,img:1,category:1,updatedAt:1},{limit:1});
+        banners = await Post.find(
+            {
+                category:type
+            },
+            {
+                title:1,
+                img:1,
+                category:1,
+                updatedAt:1
+            },
+            {
+                limit:1
+            }
+        );
         //posts not found 
         if(posts.length===0){
-            response = new notFoundError({
+            response = new notFoundError(
+                {
                 name:"category error",
                 message:`('${type}') type posts are not found!`,
-            });
+                }
+            );
             return next(response)
         }
         //rename userId field
@@ -45,16 +90,54 @@ const getPosts = asyncHandler(async (req,res,next) =>{
         })
 
         //response
-        response = new apiresponse(`${type} type posts`,200,{posts:renamePosts, ads, banners});
+        response = new apiresponse(
+            `${type} type posts`,
+            200,
+            {
+                posts:renamePosts, 
+                ads, 
+                banners
+            }
+        );
         return res.status(response.statusCode).json(response)
     }
 
     //if all posts
-    posts = await Post.find({},{},{limit:4}).populate('userId','username');
+    posts = await Post.find(
+        {},{},
+        {
+            limit:4
+        }
+    ).populate(
+        'userId',
+        'username'
+    );
     //ads
-    ads = await Post.find({},{title:1,img:1,category:1,updatedAt:1},{limit:4});
+    ads = await Post.find(
+        {},
+        {
+            title:1,
+            img:1,
+            category:1,
+            updatedAt:1
+        },
+        {
+            limit:4
+        }
+    );
     //post banner without category
-    banners = await Post.find({},{title:1,img:1,category:1,updatedAt:1},{limit:1});
+    banners = await Post.find(
+        {},
+        {
+            title:1,
+            img:1,
+            category:1,
+            updatedAt:1
+        },
+        {
+            limit:1
+        }
+    );
     //rename userid to user
     const renamedPosts = posts.map(post=>{
         const {userId, commented, ...rest} = post.toObject();
@@ -66,7 +149,15 @@ const getPosts = asyncHandler(async (req,res,next) =>{
     })
 
     //response
-    response = new apiresponse("all posts",200,{posts:renamedPosts,ads,banners});
+    response = new apiresponse(
+        "all posts",
+        200,
+        {
+            posts:renamedPosts,
+            ads,
+            banners
+        }
+    );
     return res.status(response.statusCode).json(response)
 })
 
@@ -81,7 +172,14 @@ const getPost = asyncHandler(async (req,res,next) =>{
     //cookies 
     const userInfo = verifyToken(req.cookies.uid);
     //post
-    const post = await Post.findOne({_id:postId}).populate("userId","username img name");
+    const post = await Post.findOne(
+        {
+            _id:postId
+        }
+    ).populate(
+        "userId",
+        "username img name"
+    );
     if(post===null){
         response = new Error("Post not found may be deleted");
         response.statusCode = 404;
@@ -93,10 +191,32 @@ const getPost = asyncHandler(async (req,res,next) =>{
         await post.save();
     }
     //suggest posts
-    const suggestPosts = await Post.find({category:post.category},{title:1,userId:1,img:1,category:1},{limit:2}).populate("userId","username");
+    const suggestPosts = await Post.find(
+        {
+            category:post.category
+        },
+        {
+            title:1,
+            userId:1,
+            img:1,
+            category:1
+        },
+        {
+            limit:2
+        }
+    ).populate(
+        "userId",
+        "username"
+    );
     //suggestions
     if(suggestPosts.length===0){
-        response = new notFoundError({message:"suggested posts not found",name:"SuggestionPostNotAvailable",statusCode:500});
+        response = new notFoundError(
+            {
+                message:"suggested posts not found",
+                name:"SuggestionPostNotAvailable",
+                statusCode:500
+            }
+        );
         return res.status(response.statusCode).json(response)
     }
     //rename post
@@ -135,7 +255,11 @@ const addPost = asyncHandler(async (req,res,next) =>{
         return res.status(400).json(userInfo.err)
     }
     //userdata
-    const user = await User.findOne({username:userInfo.result.username});
+    const user = await User.findOne(
+        {
+            username:userInfo.result.username
+        }
+    );
     //user exists
     if(!user){
         response = new Error("Requested user does not exists!");
@@ -153,7 +277,10 @@ const addPost = asyncHandler(async (req,res,next) =>{
         upload_date: Date.now()
     }).then(result=>{
         if(result){
-            response = new apiresponse("Post Uploaded successfully",200)
+            response = new apiresponse(
+                "Post Uploaded successfully",
+                200
+            )
             return res.status(response.statusCode).json(response)
         }
     }).catch(err=>{
@@ -169,7 +296,10 @@ const addPost = asyncHandler(async (req,res,next) =>{
     })
 
     //response
-    response = new apiresponse("Post Uploaded successfully",200)
+    response = new apiresponse(
+        "Post Uploaded successfully",
+        200
+    );
     return res.status(response.statusCode).json(response)
 })
 
@@ -240,7 +370,10 @@ const partialUpdate = asyncHandler(async (req,res,next) =>{
     }
 
     //response
-    response = new apiresponse(`Post's ${Object.keys(req.body).map((key,index)=>index===0?key:" "+key)} changed successfully`,202);
+    response = new apiresponse(
+        `Post's ${Object.keys(req.body).map((key,index)=>index===0?key:" "+key)} changed successfully`,
+        202
+    );
     return res.status(response.statusCode).json(response);   
 })
 
@@ -262,7 +395,11 @@ const deletePost = asyncHandler(async (req,res,next) =>{
         return next(err)
     }
     //post
-    const post = await Post.findOne({_id:postId});
+    const post = await Post.findOne(
+        {
+            _id:postId
+        }
+    );
     //post not exists
     if(!post){
         response = new Error("this post not found may be deleted");
@@ -281,9 +418,17 @@ const deletePost = asyncHandler(async (req,res,next) =>{
         return res.status(response.statusCode).json(response)
     }
     //delete post
-    await Post.deleteOne({_id:postId}).then(result=>{
+    await Post.deleteOne(
+        {
+            _id:postId
+        }
+    ).then(result=>{
         //response
-        response = new apiresponse(`(id:${postId}) is deleted successfully`,200,result.acknowledged);
+        response = new apiresponse(
+            `(id:${postId}) is deleted successfully`,
+            200,
+            result.acknowledged
+        );
         return res.status(response.statusCode).json(response)
     }).catch(err=>{
         if(err){

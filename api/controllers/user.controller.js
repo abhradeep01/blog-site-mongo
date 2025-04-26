@@ -14,9 +14,24 @@ const userInfo = asyncHanlder(async (req,res,next) =>{
     var response;
 
     //uservalid
-    await User.findById({_id:userid},{likedPosts:0,savedPosts:0}).then(async (result)=>{
-        const postcount = await Post.countDocuments({userId:userid})
-        response = new apiresponse("user found successfully",200,{
+    await User.findById(
+        {
+            _id:userid
+        },
+        {
+            likedPosts:0,
+            savedPosts:0
+        }
+    ).then(async (result)=>{
+        const postcount = await Post.countDocuments(
+            {
+                userId:userid
+            }
+        );
+        response = new apiresponse(
+            "user found successfully",
+            200,
+            {
                 ...result.toObject(),
                 postcount
             }
@@ -41,7 +56,11 @@ const getUserPosts = asyncHanlder(async (req,res,next) =>{
     var response;
 
     //user
-    const user = await User.findById({_id:userId}).then(result=>{
+    const user = await User.findById(
+        {
+            _id:userId
+        }
+    ).then(result=>{
         return {
             success:true,
             result
@@ -60,13 +79,26 @@ const getUserPosts = asyncHanlder(async (req,res,next) =>{
         return next(err)
     }
     //posts
-    await Post.find({userId:userId}).then(result=>{
-        response = new apiresponse(`user posts fetched successfully`,200,[...result]);
+    await Post.find(
+        {
+            userId:userId
+        }
+    ).then(result=>{
+        response = new apiresponse(
+            `user posts fetched successfully`,
+            200,
+            [...result]
+        );
         return res.status(response.statusCode).send(response)
     }).catch(err=>{
         if(err){
-            response = new notFoundError({name:"No Content",message:"user hasn't posted anything yet!"});
-            return res.status(notFoundError.statusCode).json(response)
+            response = new notFoundError(
+                {
+                    name:"No Content",
+                    message:"user hasn't posted anything yet!"
+                }
+            );
+            return res.status(response.statusCode).json(response)
         }
     });
 })
@@ -101,7 +133,11 @@ const userPartialUpdate = asyncHanlder(async (req,res,next) =>{
         return res.status(response.statusCode).json(response)
     }
     //user
-    const user = await User.findOne({_id:userid});
+    const user = await User.findOne(
+        {
+            _id:userid
+        }
+    );
     //user not exists
     if(!user){
         response = new Error("User not found!");
@@ -139,7 +175,10 @@ const userPartialUpdate = asyncHanlder(async (req,res,next) =>{
     }
 
     // response after done updating
-    response = new apiresponse(`${Object.keys(newInfo).map(key => key+" ")}updated successfully`,202);
+    response = new apiresponse(
+        `${Object.keys(newInfo).map(key => key+" ")}updated successfully`,
+        202
+    );
     return res.status(response.statusCode).json(response)
 })
 
@@ -164,7 +203,11 @@ const deleteUser = asyncHanlder(async (req,res,next) =>{
         return res.status(response.statusCode).json(response)
     }
     //user 
-    const user = await User.findOne({_id:userId});
+    const user = await User.findOne(
+        {
+            _id:userId
+        }
+    );
     //user not exists
     if(!user){
         response = new Error("The requested user account not found due to Internal server error!");
@@ -173,8 +216,15 @@ const deleteUser = asyncHanlder(async (req,res,next) =>{
         return next(response)
     }
     //user delete
-    await User.deleteOne({_id:userId}).then(result=>{
-        response = new apiresponse("User deleted Successfully",200);
+    await User.deleteOne(
+        {
+            _id:userId
+        }
+    ).then(result=>{
+        response = new apiresponse(
+            "User deleted Successfully",
+            200
+        );
         return res.status(response.statusCode).json(response)
     }).catch(err=>{
         if(err){

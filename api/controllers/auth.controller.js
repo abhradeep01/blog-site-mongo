@@ -24,10 +24,14 @@ const register = asyncHanlder(async(req,res,next)=>{
         return next(response)
     }
     //user find
-    const existUser = await User.findOne({$or:[
-        {username:username},
-        {email:email}
-    ]});
+    const existUser = await User.findOne(
+        {
+            $or:[
+                {username:username},
+                {email:email}
+            ]
+        }
+    );
     //if user exists already
     if(existUser){
         response = new apiError(
@@ -248,7 +252,10 @@ const findUser = asyncHanlder(async (req,res,next)=>{
     );
 
     //response res
-    response = new apiresponse(`Your account has been found and OTP send to your ${user.email}`,200);
+    response = new apiresponse(
+        `Your account has been found and OTP send to your ${user.email}`,
+        200
+    );
     return res.cookie('auth_id',token,{
         maxAge:3600000,
         expires:new Date(Date.now+3600000),
@@ -267,7 +274,11 @@ const resend = asyncHanlder(async (req,res,next) =>{
     const authInfo = verifyToken(req.cookies.auth_id);
 
     //check if email exists in database
-    const user = await User.findOne({email:authInfo.result.email});
+    const user = await User.findOne(
+        {
+            email:authInfo.result.email
+        }
+    );
     //if email is invalid
     if(!user){
         const err = new Error('Invalid email please insert valid email!');
@@ -295,7 +306,10 @@ const resend = asyncHanlder(async (req,res,next) =>{
     user.otp = otp;
     await user.save();
     //response sent
-    response = new apiresponse("OTP send to your email successfully",200);
+    response = new apiresponse(
+        "OTP send to your email successfully",
+        200
+    );
     //response
     return res.status(response.statusCode).json(response)
 })
@@ -321,7 +335,11 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
         return res.status(response.statusCode).json(response)
     }
     //user
-    const user = await User.findOne({email:authInfo.result.email});
+    const user = await User.findOne(
+        {
+            email:authInfo.result.email
+        }
+    );
     //user not exists
     if(!user){
         response = new Error("User not exists with this email!");
@@ -340,12 +358,16 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
         return res.status(response.statusCode).json(response)
     }
     //response config
-    response = new apiresponse(`you ${authInfo.result.purpose} successfully`,200,{
-        id: user._id,
-        username: user.username,
-        name: user.name,
-        profileImg: user.img
-    });
+    response = new apiresponse(
+        `you ${authInfo.result.purpose} successfully`,
+        200,
+        {
+            id: user._id,
+            username: user.username,
+            name: user.name,
+            profileImg: user.img
+        }
+    );
     //user otp to null
     user.otp = null;
     if(authInfo.result.purpose==="register"){
@@ -354,12 +376,21 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
     await user.save();
     //if for one time
     if(!authInfo.result.remember){
-        token = createToken({
-            id: user._id,
-            username: user.username,
-            email: user.email
-        });
+        token = createToken(
+            {
+                id: user._id,
+                username: user.username,
+                email: user.email
+            }
+        );
 
+        //remove auth cookie
+        res.clearCookie('auth_id',{
+            httpOnly:true,
+            secure:true,
+            sameSite:"strict",
+            path:'/'
+        })
         return res.cookie("uid",token,{
             maxAge:3600000,
             expires:new Date(Date.now+3600000),
@@ -402,7 +433,11 @@ const changePassword = asyncHanlder(async (req,res,next) =>{
     const authInfo = verifyToken(req.cookies.auth_id);
 
     //user
-    const user = await User.findOne({email:authInfo.result.email});
+    const user = await User.findOne(
+        {
+            email:authInfo.result.email
+        }
+    );
     //user not exists
     if(!user){
         response = new apiError(
@@ -449,14 +484,20 @@ const changePassword = asyncHanlder(async (req,res,next) =>{
     }
 
     //response config
-    response = new apiresponse("password change successfully",202);
+    response = new apiresponse(
+        "password change successfully",
+        202
+    );
     return res.status(response.statusCode).json(response)   
 })
 
 
 //logout function
 const logout = asyncHanlder(async (req,res,next) =>{
-    var response = new apiresponse("logout successfully",200);
+    var response = new apiresponse(
+        "logout successfully",
+        200
+    );
     return res.clearCookie().status(response.statusCode).json(response)
 })
 
