@@ -340,7 +340,7 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
         return res.status(response.statusCode).json(response)
     }
     //response config
-    response = new apiresponse("you login successfully",200,{
+    response = new apiresponse(`you ${authInfo.result.purpose} successfully`,200,{
         id: user._id,
         username: user.username,
         name: user.name,
