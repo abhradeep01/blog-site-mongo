@@ -1,7 +1,6 @@
 //error on api
 class apiError {
   constructor(error, statusCode) {
-    // super(error); // Call the parent Error constructor
     this.statusCode = statusCode < 500 && statusCode >= 400 ? statusCode : 400;
     this.message = error.message;
     this.success = false;
@@ -23,18 +22,22 @@ class apiError {
 
 
   //client error
-  class clientError extends Error{
-    constructor(error,message){
-
+  class clientError {
+    constructor(errorname,message,statusCode){
+      this.errorname = errorname;
+      this.statusCode = statusCode || 400;
+      this.message = message || "Something went wrong!";
+      this.success = false;
     }
   }
 
   //server error
-  class serverError extends Error{
-    constructor(error,message){
-      super(message)
-      this.statusCode = error.statusCode >= 500 ? error.statusCode : 500;
-      this.message = error.message
+  class serverError {
+    constructor(errorname,message,statusCode){
+      this.statusCode = statusCode || 500;
+      this.message = message || "Internal server error";
+      this.errorname = errorname;
+      this.success = false ;
     }
   }
   
@@ -50,4 +53,4 @@ class apiError {
   }
 
 
-  export { apiError, notFoundError, serverError, actionError };
+  export { apiError, notFoundError, serverError, actionError, clientError };

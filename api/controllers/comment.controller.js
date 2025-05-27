@@ -4,8 +4,7 @@ import Post from '../models/post.model.js';
 import Comment from '../models/comment.model.js';
 import User from '../models/user.model.js';
 import { apiresponse } from "../helper/apiResponse.js";
-import { apiError } from "../helper/CustomError.js";
-import { name } from "ejs";
+import { apiError, clientError, serverError } from "../helper/CustomError.js";
 
 
 //posts all comments
@@ -19,65 +18,68 @@ const getPostsAllComments = asyncHanlder(async (req,res,next)=>{
 
     //cookies 
     const userInfo = verifyToken(token);
-    //cookies expired
-    if(!userInfo.success){
-        response = new Error("Your session expired. Please log in again.");
-        response.statusCode = 401;
-        response.name = "SessionExpiredError";
-        return next(err)
-    }
-
+    
     //user id
     const userId = userInfo.result.id;
     //post does exsits
     const user = await User.findOne(
         {
             _id:userId
-        },
-        '0'
+        }
     );
     //user does not exists
     if(!user){
-        response = new Error("The requested user does not exists!");
-        response.statusCode = 404;
-        response.name = "UserNotFoundError";
-        return next(response)
+        response = new clientError(
+            "UserNotExistsError",
+            "The requested user does not exists!",
+            404
+        );
+        return res.status(response.statusCode).json(response)
     }
     //post
-    const post = await Post.findOne(
+    Post.findOne(
         {
             _id:postId
-        },
-        '0'
-    );
-    //post does not exists
-    if(!post){
-        response = new Error("The requested post does not exists!");
-        response.statusCode = 404;
-        response.name = "PostNotFoundError";
-        return next(response)
-    }
-    //comments
-    const postComments = await Comment.find(
-        {
-            post:postId
         }
-    );
-    //no comments found
-    if(postComments.length===0){
-        response = new Error("No Comments found yet!");
-        response.name = "CommentsNotFoundError";
-        response.statusCode = 404;
-        return next(response)
-    }
-
-    //response config
-    response = new apiresponse(
-        "Posts commets found successfully",
-        200,
-        [...postComments]
-    );
-    return res.status(response.statusCode).json(response)
+    ).then(async result=>{
+        //comments
+        const postComments = await Comment.find(
+            {
+                post:result._id
+            }
+        );
+        //no comments found
+        if(postComments.length===0){
+            response = new clientError(
+                "CommentsNotFoundError",
+                "no comments found yet!",
+                404
+            );
+            return res.status(response.statusCode).json(response)
+        }
+        //response config
+        response = new apiresponse(
+            "Posts commets found successfully",
+            200,
+            [...postComments]
+        );
+        return res.status(response.statusCode).json(response)
+    }).then(err=>{
+        // server error
+        if(err){
+            response = new Error(err);
+            response.name = "PostNotFoundError";
+            response.statusCode = 404;
+            return next(response)
+        }
+        // client error
+        response = new clientError(
+            "PostNotFoundError",
+            "the requested post does not exists!",
+            404
+        );
+        return res.status(response.statusCode).json(response)
+    });
 });
 
 
@@ -92,13 +94,6 @@ const addComment = asyncHanlder(async(req,res,next)=>{
 
     //cookies decode
     const userInfo = verifyToken(req.cookies.uid);
-    //cookies expired
-    if(!userInfo.success){
-        response = new Error("Your session expired. Please log in again.");
-        response.statusCode = 401;
-        response.name = "SessionExpiredError";
-        return next(response)
-    }
 
     //user id
     const userId = userInfo.result.id;
@@ -192,19 +187,11 @@ const editComment = asyncHanlder(async(req,res,next)=>{
     //cookies 
     const userInfo = verifyToken(req.cookies.uid);
 
-    //if cookies not valid
-    if(!userInfo.success){
-        response = new Error("Your session expired. Please login again");
-        response.statusCode = 401; 
-        response.name = "SessionExpiredError";
-        return next(response)
-    }
     //user
     const user = await User.findOne(
         {
             _id:userInfo.result.id
-        },
-        "0"
+        }
     ).then(result=>{
         return{
             success:true,
@@ -218,10 +205,12 @@ const editComment = asyncHanlder(async(req,res,next)=>{
     });
     //if user does not exists
     if(!user){
-        response = new Error("the requested user does not exists!");
-        response.statusCode = 404;
-        response.name = "ErrorNotFoundError!";
-        return next(response)
+        response = new clientError(
+            "UserNotFoundError",
+            "the requested user does not exists!",
+            404
+        );
+        return res.status(response.statusCode).json(response)
     }
     // comment
     const comment = await Comment.findOne(
@@ -231,10 +220,12 @@ const editComment = asyncHanlder(async(req,res,next)=>{
     );
     // if comment not exists
     if(!comment){
-        response = new Error("requested comment not found!");
-        response.statusCode = 404;
-        response.name = "CommentNotFoundError";
-        return next(response)
+        response = new clientError(
+            "CommentNotFound",
+            'requested comment not found!',
+            404
+        );
+        return res.status(response.statusCode).json(response)
     }
     //permissons
     if(comment.user.toString()!==userInfo.result.id){
@@ -257,7 +248,7 @@ const editComment = asyncHanlder(async(req,res,next)=>{
             }
         }
     ).then(async result=>{
-        if(result){
+        if(result.acknowledged){
             const newComment = await Comment.findOne(
                 {
                     _id:commentId
@@ -273,12 +264,19 @@ const editComment = asyncHanlder(async(req,res,next)=>{
             return res.status(response.statusCode).json(response)
         }
     }).catch(err=>{
+        // server error
         if(err){
             response = new Error("Unable to update comment!");
-            response.statusCode = 500;
+            response.statusCode = 503;
             response.name = "CommentUpdateError";
             return next(response)
         }
+        // client error
+        response = new clientError(
+            "CommentUpdateError",
+            "Unable to update comment",
+        );
+        return res.status(response.statusCode).json(response)
     });
 })
 
@@ -300,10 +298,12 @@ const deleteComment = asyncHanlder(async(req,res,next)=>{
     );
     //if user not exists
     if(!user){
-        response = new Error("the requested user does no exists!");
-        response.statusCode = 404;
-        response.name = "UserNotFoundError";
-        return next(response)
+        response = new clientError(
+            "UserNotFoundError",
+            "the requested user does not exists!",
+            404
+        )
+        return res.status(response.statusCode).json(response)
     }
     //comment
     const comment = await Comment.findOne(
@@ -313,10 +313,12 @@ const deleteComment = asyncHanlder(async(req,res,next)=>{
     );
     //if comment not found
     if(!comment){
-        response = new Error("This requested comment for deletion does not exists!");
-        response.statusCode = 404;
-        response.name = "CommentNotFoundError";
-        return next(response)
+        response = new clientError(
+            "CommentNotFoundError",
+            "The requested comment for deletion does not exists!",
+            404
+        );
+        return res.status(response.statusCode).json(response)
     }
     //permissons
     if(comment.user.toString()!==userInfo.result.id){

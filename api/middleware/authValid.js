@@ -1,5 +1,4 @@
-import { json } from "express";
-import { apiError } from "../helper/CustomError.js";
+import routeResponse from "../helper/routingResponse.js";
 import asyncHanlder from "../utilities/asyncHandler.js";
 import { verifyToken } from "../utilities/auth.js";
 
@@ -10,11 +9,11 @@ const authValid = asyncHanlder(async (req,res,next)=>{
     var response;
     //token not exists
     if(!authToken){
-        response = new apiError(
-            {
-                message:"Unauthenticated user",
-                name:"UnauthenticatedError"
-            },401
+        response = new routeResponse(
+            '/login',
+            'unauthenticted user please login!',
+            401,
+            "UnauthenticatedUserError"
         );
         return res.status(response.statusCode).json(response)
     }
@@ -22,11 +21,11 @@ const authValid = asyncHanlder(async (req,res,next)=>{
     const authInfo = verifyToken(authToken);
     //cookie expired
     if(!authInfo.success){
-        response = new apiError(
-            {
-                message:"user session expired!",
-                name:"SessionExpiredError"
-            },401
+        response = new routeResponse(
+            '/login',
+            'session expired login again!',
+            401,
+            "SessionExpired"
         );
         return res.status(response.statusCode).json(response)
     }

@@ -4,10 +4,11 @@ import { sendVarificationCode } from "../services/nodeMail.js";
 import bcrypt from 'bcryptjs';
 import { otpgenerate } from "../utilities/otpgenarate.js";
 import asyncHanlder from "../utilities/asyncHandler.js";
-import { apiError } from "../helper/CustomError.js";
+import { clientError, serverError } from "../helper/CustomError.js";
 import { apiresponse } from "../helper/apiResponse.js";
 import path from "path";
 import ejs from 'ejs';
+import routeResponse from "../helper/routingResponse.js";
 
 //register function
 const register = asyncHanlder(async(req,res,next)=>{
@@ -18,10 +19,10 @@ const register = asyncHanlder(async(req,res,next)=>{
 
     //validate fields
     if(!name || !username || !email || !password || !img){
-        response = new Error("fill all required fields!");
-        response.statusCode = 400;
-        response.name = "ValidationError";
-        return next(response)
+        return next(new clientError(
+            "validationError",
+            "fill all required fields!"
+        ))
     }
     //user find
     const existUser = await User.findOne(
@@ -34,13 +35,11 @@ const register = asyncHanlder(async(req,res,next)=>{
     );
     //if user exists already
     if(existUser){
-        response = new apiError(
-            {
-                message:"User already exists!",
-                name:"UserAlreadyExistsError"
-            },409
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "userAlreadyExistsError!",
+            `user already exists with ${existUser.email === email?email:username} ${existUser.email === email?"email":"username"}`,
+            409
+        ))
     }
     //hash password
     const hashPassword = bcrypt.hashSync(password,10);
@@ -60,13 +59,11 @@ const register = asyncHanlder(async(req,res,next)=>{
         const messageRes = await sendVarificationCode(result.email,"Email varification for login",data); 
         //error on mail sending 
         if(!messageRes.success){
-            response = new apiError(
-                {
-                    message:`Failed to send varification code!`,
-                    name:"EmailDeliveryError"
-                },500
-            );
-            return res.status(response.statusCode).json(response)
+            return next(new serverError(
+                "EmailDeliveryError",
+                "failed to send verification code!",
+                503
+            ))
         }
         //otp saved 
         result.otp = otp;
@@ -79,9 +76,11 @@ const register = asyncHanlder(async(req,res,next)=>{
                     purpose:"register"
                 }
             )
-            response = new apiresponse(
-                `verification code send successfully to ${result.email}`,
-                201
+            response = new routeResponse(
+                '/verify',
+                `verification code is sent to ${result.email}`,
+                200,
+                result.email
             );
             return res.cookie('auth_id',token,{
                 maxAge:3600000,
@@ -92,15 +91,19 @@ const register = asyncHanlder(async(req,res,next)=>{
             }).status(response.statusCode).json(response)
         }
     }).catch(err=>{
+        // server error
         if(err){
-            response = new apiError(
-                {
-                    message:"Error on registering user service unavailable",
-                    name:"ServiceUnavailable"
-                },500
-            );
-            return res.status(response.statusCode).json(response)
+            return next(new serverError(
+                "ServiceUnavailable",
+                "Error on registering user service unavailable",
+                503
+            ))
         }
+        // client 
+        return next(new serverError(
+            "serviceUnavailableError",
+            "something went wrong!",
+        ))
     });
 });
 
@@ -114,13 +117,10 @@ const login = asyncHanlder(async (req,res,next) =>{
 
     //check field valid
     if(!((username || email) && password)){
-        response = new apiError(
-            {
-                message:"Please fill all required fields!",
-                name:"ValidationError"
-            },400
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "validationError",
+            "filled all required fields!"
+        ))
     }
     //user
     const user = await User.findOne({
@@ -130,21 +130,20 @@ const login = asyncHanlder(async (req,res,next) =>{
         ]
     });
     //user not exists
-    if(user===null){
-        response = new Error(`User does not exists with this ${email?`email:${email}`:`username:${username}`} or ${email?"email":"usernmae"} is incorrect`);
-        response.name = "UserNotExistsError";
-        response.statusCode = 404;
-        return next(response)
+    if(!user){
+        return next(new clientError(
+            "UserNotFoundError",
+            `user does not exists with this ${username || email + "email"}!`,
+            404
+        ))
     }
     //passoword is correct or not
     if(!bcrypt.compareSync(password,user.password)){
-        response = new apiError(
-            {
-                message:"Incorrect password",
-                name:"InvalidCredenatialsError"
-            },401
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "InvalidCredenatialsError",
+            "Incorrect password or username",
+            401
+        ))
     }
     //new otp
     const otp = otpgenerate();
@@ -154,13 +153,11 @@ const login = asyncHanlder(async (req,res,next) =>{
     const messageRes = await sendVarificationCode(user.email,"Email varification for login",data); 
     //error on mail sending 
     if(!messageRes.success){
-        response = new apiError(
-            {
-                message:`Failed to send varification code!`,
-                name:"EmailDeliveryError"
-            },500
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new serverError(
+            "EmailDeliveryError",
+            "failed to send verification code!",
+            503
+        ));
     }
     //otp saved
     user.otp = otp;
@@ -168,15 +165,17 @@ const login = asyncHanlder(async (req,res,next) =>{
     //token
     const token = createToken(
         {
-            email,
+            email:user.email,
             purpose:"login",
             remember
         }
     )
     //response config
-    response = new apiresponse(
+    response = new routeResponse(
+        "/verify",
         "Verification code send successfully to your registered email",
-        200
+        303,
+        user.email
     );
     return res.cookie('auth_id',token,{
         maxAge:3600000,
@@ -197,13 +196,10 @@ const findUser = asyncHanlder(async (req,res,next)=>{
 
     //email or username not sent
     if(!email && !username){
-        response = new apiError(
-            {
-                message:"Please enter username or email of your account!",
-                name:"FieldEmptyError"
-            },400
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "validationError",
+            "Please enter username or email of your account!"
+        ))
     }
     //user 
     const user = await User.findOne(
@@ -215,14 +211,12 @@ const findUser = asyncHanlder(async (req,res,next)=>{
         }
     );
     //user not found
-    if(user===null){
-        response = new apiError(
-            {
-                message:`User not exists with this ${username?"username":"email"} ${username?username:email}`,
-                name:"UserNotFoundError!"
-            },404
-        );
-        return res.status(response.statusCode).json(response)
+    if(!user){
+        return next(new serverError(
+            "UserNotFoundError!",
+            `User not exists with this ${username?"username":"email"} ${username?username:email}`,
+            404
+        ))
     }
     //onetime password
     const otp = otpgenerate();
@@ -232,13 +226,11 @@ const findUser = asyncHanlder(async (req,res,next)=>{
     const messageRes = await sendVarificationCode(user.email,"Email varification for login",data); 
     //email not sent
     if(!messageRes.success){
-        response = new apiError(
-            {
-                message:`Failed to send varification code!`,
-                name:"EmailDeliveryError"
-            },400
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new serverError(
+            "EmailDeliveryError",
+            "failed to send verification code!",
+            503
+        ))
     }
     //otp saved 
     user.otp = otp;
@@ -247,14 +239,16 @@ const findUser = asyncHanlder(async (req,res,next)=>{
     const token = createToken(
         {
             email:user.email,
+            remember:false,
             purpose:"forget password"
         }
     );
 
     //response res
     response = new apiresponse(
-        `Your account has been found and OTP send to your ${user.email}`,
-        200
+        `Your account has been found and OTP send to your email`,
+        200,
+        user.email
     );
     return res.cookie('auth_id',token,{
         maxAge:3600000,
@@ -281,10 +275,10 @@ const resend = asyncHanlder(async (req,res,next) =>{
     );
     //if email is invalid
     if(!user){
-        const err = new Error('Invalid email please insert valid email!');
-        err.statusCode = 400;
-        err.name = 'InvalidEmailError';
-        return next(err)
+        return next(new clientError(
+            "InvalidEmailError",
+            'Invalid email please insert valid email!'
+        ))
     }
     //onetime password
     const otp = otpgenerate();
@@ -294,13 +288,11 @@ const resend = asyncHanlder(async (req,res,next) =>{
     const messageRes = await sendVarificationCode(user.email,"Email varification for login",data); 
     //email not sent
     if(!messageRes.success){
-        response = new apiError(
-            {
-                message:`Failed to send varification code!`,
-                name:"EmailDeliveryError"
-            },400
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new serverError(
+            "EmailDeliveryError",
+            "failed to send verification code!",
+            503
+        ))
     }
     //otp saved 
     user.otp = otp;
@@ -325,14 +317,12 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
     //auth info
     const authInfo = verifyToken(req.cookies.auth_id);
     
-    if(otp === null){
-        response = new apiError(
-            {
-                message:"You can't send null otp",
-                name:"NullOTPError"
-            },400
-        );
-        return res.status(response.statusCode).json(response)
+    //if otp not send
+    if(!otp){
+        return next(new clientError(
+            "NullOTPError",
+            "Please enter the OTP!"
+        ))
     }
     //user
     const user = await User.findOne(
@@ -342,23 +332,23 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
     );
     //user not exists
     if(!user){
-        response = new Error("User not exists with this email!");
-        response.statusCode = 404;
-        response.name = "UserNotExistsError";
-        return next(response)
+        return next(new clientError(
+            "userNotExistsError",
+            "User not exists with email!",
+            404
+        ))
     }
     // otp not matched
-    if(otp !== user.otp){
-        response = new apiError(
-            {
-                message:"The verification code you entered is incorrect!",
-                name:"InvalidOTPError"
-            },400
-        );
-        return res.status(response.statusCode).json(response)
+    if(Number(otp) !== user.otp){
+        return next(new clientError(
+            "InvalidOTPError",
+            "The verification code you entered is incorrect!",
+            401
+        ))
     }
     //response config
-    response = new apiresponse(
+    response = new routeResponse(
+        "/",
         `you ${authInfo.result.purpose} successfully`,
         200,
         {
@@ -418,8 +408,8 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
         sameSite:"strict",
         httpOnly: true,
         secure: true
-    }).status(200).json(response);
-    return res.status(response.statusCode).json(response)
+    })
+    return res.status(response.statusCode).json(response);
 })
 
 
@@ -440,23 +430,18 @@ const changePassword = asyncHanlder(async (req,res,next) =>{
     );
     //user not exists
     if(!user){
-        response = new apiError(
-            {
-                message:"No user found with this email",
-                name:"UserNotFoundError"
-            },400
-        )
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "UserNotFoundError",
+            "No user found with this email",
+            404
+        ))
     }
     //check if new password is same to the previous one
     if(bcrypt.compareSync(newpassword,user.password)){
-        response = new apiresponse(
-            {
-                message:"new password is same as previous password!",
-                name:"SamePasswordError"
-            },500
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "SamePasswordError",
+            'new password is same as previous password!'
+        ))
     }
     //encrypt new password
     const hashPassword = bcrypt.hashSync(newpassword,10);
@@ -477,14 +462,16 @@ const changePassword = asyncHanlder(async (req,res,next) =>{
     );
     //pasword not updated
     if(!updatedoc.acknowledged){
-        const err = new Error('unable to change password!');
-        err.statusCode = 400;
-        err.name = 'PasswordUpdateFailure';
-        return next(err)
+        return next(new serverError(
+            "PasswordUpdateFailure",
+            'unable to change password!',
+            503
+        ))
     }
 
     //response config
-    response = new apiresponse(
+    response = new routeResponse(
+        "/changed",
         "password change successfully",
         202
     );
@@ -494,11 +481,17 @@ const changePassword = asyncHanlder(async (req,res,next) =>{
 
 //logout function
 const logout = asyncHanlder(async (req,res,next) =>{
-    var response = new apiresponse(
+    var response = new routeResponse(
+        "/login",
         "logout successfully",
         200
     );
-    return res.clearCookie().status(response.statusCode).json(response)
+    return res.clearCookie('uid',{
+        httpOnly:true,
+        secure:true,
+        sameSite:"strict",
+        path:'/'
+    }).status(response.statusCode).json(response)
 })
 
 

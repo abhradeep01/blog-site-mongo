@@ -41,11 +41,11 @@ app.use('/api/upload',uploadRouter);
 app.use('/api/comment',isValid,commentRouter);
 app.use('/api/profile',isValid,profileRouter);
 app.use('/api/interaction',isValid,interactionRouter);
-app.all('*',isValid,(req,res,next)=>{
+app.all('*',(req,res,next)=>{
     const err = new Error(`can't find ${req.originalUrl} route on the server!`);
-    err.status = 'not found';
+    err.name = `route not found!`;
     err.statusCode = 404;
-    next(err);
+    return next(err)
 });
 
 

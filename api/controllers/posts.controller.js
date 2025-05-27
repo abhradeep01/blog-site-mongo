@@ -19,31 +19,20 @@ const getPosts = asyncHandler(async (req,res,next) =>{
     var banners;
 
     //category wise posts return
-    if(type){
-        // posts with specified category
+    if(type==='undefined'){
+        //if all posts
         posts = await Post.find(
-            {
-                category:type
-            },
-            {
-                bookmarked:0
-            },
+            {},{},
             {
                 limit:4
             }
         ).populate(
-            {
-                path:'userId',
-                select:{
-                    username:1
-                }
-            }
+            'userId',
+            'username'
         );
-        //post ads with specified category
+        //ads
         ads = await Post.find(
-            {
-                category:type
-            },
+            {},
             {
                 title:1,
                 img:1,
@@ -54,11 +43,9 @@ const getPosts = asyncHandler(async (req,res,next) =>{
                 limit:4
             }
         );
-        //post banner with specified category
+        //post banner without category
         banners = await Post.find(
-            {
-                category:type
-            },
+            {},
             {
                 title:1,
                 img:1,
@@ -69,18 +56,8 @@ const getPosts = asyncHandler(async (req,res,next) =>{
                 limit:1
             }
         );
-        //posts not found 
-        if(posts.length===0){
-            response = new notFoundError(
-                {
-                name:"category error",
-                message:`('${type}') type posts are not found!`,
-                }
-            );
-            return next(response)
-        }
-        //rename userId field
-        const renamePosts = posts.map(post=>{
+        //rename userid to user
+        const renamedPosts = posts.map(post=>{
             const {userId, commented, ...rest} = post.toObject();
             return {
                 ...rest,
@@ -91,30 +68,40 @@ const getPosts = asyncHandler(async (req,res,next) =>{
 
         //response
         response = new apiresponse(
-            `${type} type posts`,
+            "all posts",
             200,
             {
-                posts:renamePosts, 
-                ads, 
+                posts:renamedPosts,
+                ads,
                 banners
             }
         );
-        return res.status(response.statusCode).json(response)
+        return res.status(response.statusCode).json(response)   
     }
-
-    //if all posts
+    // posts with specified category
     posts = await Post.find(
-        {},{},
+        {
+            category:type
+        },
+        {
+            bookmarked:0
+        },
         {
             limit:4
         }
     ).populate(
-        'userId',
-        'username'
+        {
+            path:'userId',
+            select:{
+                username:1
+            }
+        }
     );
-    //ads
+    //post ads with specified category
     ads = await Post.find(
-        {},
+        {
+            category:type
+        },
         {
             title:1,
             img:1,
@@ -125,9 +112,11 @@ const getPosts = asyncHandler(async (req,res,next) =>{
             limit:4
         }
     );
-    //post banner without category
+    //post banner with specified category
     banners = await Post.find(
-        {},
+        {
+            category:type
+        },
         {
             title:1,
             img:1,
@@ -138,8 +127,18 @@ const getPosts = asyncHandler(async (req,res,next) =>{
             limit:1
         }
     );
-    //rename userid to user
-    const renamedPosts = posts.map(post=>{
+    //posts not found 
+    if(posts.length===0){
+        response = new notFoundError(
+            {
+                name:"category error",
+                message:`('${type}') type posts are not found!`,
+            }
+        );
+        return next(response)
+    }
+    //rename userId field
+    const renamePosts = posts.map(post=>{
         const {userId, commented, ...rest} = post.toObject();
         return {
             ...rest,
@@ -150,11 +149,11 @@ const getPosts = asyncHandler(async (req,res,next) =>{
 
     //response
     response = new apiresponse(
-        "all posts",
+        `${type} type posts`,
         200,
         {
-            posts:renamedPosts,
-            ads,
+            posts:renamePosts, 
+            ads, 
             banners
         }
     );

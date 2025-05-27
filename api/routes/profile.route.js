@@ -12,7 +12,7 @@ profileRouter.get('/:username/posts',getUsersPosts);
 
 
 //route for getting bookmarked post 
-profileRouter.get('/:username/bookmarked',bookmarkedPosts);
+profileRouter.get('/:username/saved',bookmarkedPosts);
 
 
 //route for getting liked post
