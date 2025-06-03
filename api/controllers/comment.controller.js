@@ -29,15 +29,14 @@ const getPostsAllComments = asyncHanlder(async (req,res,next)=>{
     );
     //user does not exists
     if(!user){
-        response = new clientError(
+        return next(new clientError(
             "UserNotExistsError",
             "The requested user does not exists!",
             404
-        );
-        return res.status(response.statusCode).json(response)
+        ))
     }
     //post
-    Post.findOne(
+    await Post.findOne(
         {
             _id:postId
         }
@@ -50,12 +49,11 @@ const getPostsAllComments = asyncHanlder(async (req,res,next)=>{
         );
         //no comments found
         if(postComments.length===0){
-            response = new clientError(
+            return next(new clientError(
                 "CommentsNotFoundError",
                 "no comments found yet!",
                 404
-            );
-            return res.status(response.statusCode).json(response)
+            ))
         }
         //response config
         response = new apiresponse(
@@ -67,18 +65,18 @@ const getPostsAllComments = asyncHanlder(async (req,res,next)=>{
     }).then(err=>{
         // server error
         if(err){
-            response = new Error(err);
-            response.name = "PostNotFoundError";
-            response.statusCode = 404;
-            return next(response)
+            return next(new clientError(
+                "PostNotFoundError",
+                err,
+                500
+            ))
         }
         // client error
-        response = new clientError(
+        return next(new clientError(
             "PostNotFoundError",
             "the requested post does not exists!",
             404
-        );
-        return res.status(response.statusCode).json(response)
+        ))
     });
 });
 
@@ -341,12 +339,19 @@ const deleteComment = asyncHanlder(async(req,res,next)=>{
             return res.status(response.statusCode).json(response)
         }
     }).catch(err=>{
+        // server error
         if(err){
-            response = new Error("Unable to delete the comment!");
-            response.statusCode = 500;
-            response.name = "CommentDeleteConflict";
-            return next(response)
+            return next(new serverError(
+                "CommentDeleteConflict",
+                err,
+                500
+            ))
         }
+        // client error
+        return next(new clientError(
+            "CommentDeleteConflict",
+            "Unable to delete comment"
+        ))
     });
 })
 

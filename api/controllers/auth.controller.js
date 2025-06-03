@@ -133,7 +133,7 @@ const login = asyncHanlder(async (req,res,next) =>{
     if(!user){
         return next(new clientError(
             "UserNotFoundError",
-            `user does not exists with this ${username || email + "email"}!`,
+            `user does not exists with this ${username + " username" || email + " email"}!`,
             404
         ))
     }
@@ -174,7 +174,7 @@ const login = asyncHanlder(async (req,res,next) =>{
     response = new routeResponse(
         "/verify",
         "Verification code send successfully to your registered email",
-        303,
+        200,
         user.email
     );
     return res.cookie('auth_id',token,{
@@ -343,7 +343,7 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
         return next(new clientError(
             "InvalidOTPError",
             "The verification code you entered is incorrect!",
-            401
+            400
         ))
     }
     //response config

@@ -2,7 +2,7 @@ import asyncHanlder from "../utilities/asyncHandler.js"
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
 import { verifyToken } from "../utilities/auth.js";
-import { apiError, notFoundError } from "../helper/CustomError.js";
+import { apiError, clientError, notFoundError, serverError } from "../helper/CustomError.js";
 import { apiresponse } from "../helper/apiResponse.js";
 
 
@@ -38,12 +38,19 @@ const userInfo = asyncHanlder(async (req,res,next) =>{
         );
         return res.status(response.statusCode).send(response)
     }).catch(err=>{
+        // server error
         if(err){
-            response = new Error(`the requested user_id:('${userid}') user not exists!`);
-            response.statusCode = 404;
-            response.name = 'UserNotFoundError';
-            return next(response)
+            return next(new serverError(
+                "UserNotFoundError",
+                err
+            ))
         }
+        // client error
+        return next(new clientError(
+            "UserNotFoundError",
+            "the requested user is not found!",
+            404
+        ))
     });
 
 });
@@ -73,10 +80,11 @@ const getUserPosts = asyncHanlder(async (req,res,next) =>{
     });
     //if user is not found
     if(!user.success){
-        const err = new Error(`userId ('${userId}') not found!`);
-        err.statusCode = 404;
-        err.name = user.err.name;
-        return next(err)
+        return next(new clientError(
+            user.err.name,
+            `userId ('${userId}') not found!`,
+            404
+        ))
     }
     //posts
     await Post.find(
@@ -91,15 +99,19 @@ const getUserPosts = asyncHanlder(async (req,res,next) =>{
         );
         return res.status(response.statusCode).send(response)
     }).catch(err=>{
+        // server error
         if(err){
-            response = new notFoundError(
-                {
-                    name:"No Content",
-                    message:"user hasn't posted anything yet!"
-                }
-            );
-            return res.status(response.statusCode).json(response)
+            return next(new serverError(
+                "No Content",
+                err
+            ))
         }
+        // client error
+        return next(new clientError(
+            "NoContentFound",
+            "no content found!",
+            404
+        ))
     });
 })
 
@@ -115,22 +127,13 @@ const userPartialUpdate = asyncHanlder(async (req,res,next) =>{
     
     //cookies decoded
     const userInfo = verifyToken(req.cookies.uid);
-    //cookies expired
-    if(!userInfo.success){
-        response = new Error("Your session expired. Please log in again.");
-        response.statusCode = 401;
-        response.name = "SessionExpiredError";
-        return next(err)
-    }
     //user access denied
     if(userid!=userInfo.result.id){
-        response = new apiError(
-            {
-                message:"You don't have permisson to modify this user's informtion",
-                name:"UnauthorizedUserModificationError"
-            },403
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "UnauthorizedUserModificationError",
+            "You don't have permisson to modify this user's information!",
+            403
+        ))
     }
     //user
     const user = await User.findOne(
@@ -140,10 +143,11 @@ const userPartialUpdate = asyncHanlder(async (req,res,next) =>{
     );
     //user not exists
     if(!user){
-        response = new Error("User not found!");
-        response.statusCode = 404;
-        response.name = "UserNotFoundError";
-        return next(response)
+        return next(new clientError(
+            "UserNotFoundError",
+            "User not found!",
+            404
+        ))
     }
     //update info 
     const updateInfo = await Promise.all(
@@ -168,10 +172,11 @@ const userPartialUpdate = asyncHanlder(async (req,res,next) =>{
     );
     //if not updated
     if(updateInfo.includes(false)){
-        response = new Error(`userInfo is not updated due to Temporary server issue. Please try later`);
-        response.name = "UpdateFailedError" ;
-        response.statusCode = 400;
-        return next(response)
+        return next(new serverError(
+            `UpdateFailedError`,
+            `userinfo not updated due to temporary server issues. please try later!`,
+            503
+        ))
     }
 
     // response after done updating
@@ -194,13 +199,11 @@ const deleteUser = asyncHanlder(async (req,res,next) =>{
     const userInfo = verifyToken(req.cookies.uid);
     //user had no permit to edit
     if(userId!=userInfo.result.id){
-        response = new apiError(
-            {
-                message:"You don't have permisson to delete this user",
-                name:"UnauthorizedUserModificationError"
-            },403
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "UnauthorizedUserModificationError",
+            "You don't have permisson to delete user!",
+            403
+        ))
     }
     //user 
     const user = await User.findOne(
@@ -210,10 +213,10 @@ const deleteUser = asyncHanlder(async (req,res,next) =>{
     );
     //user not exists
     if(!user){
-        response = new Error("The requested user account not found due to Internal server error!");
-        response.statusCode = 500;
-        response.name = "InternalServerError";
-        return next(response)
+        return next(new serverError(
+            "InternalServerError",
+            "The requested user account not found due to Internal server error!"
+        ))
     }
     //user delete
     await User.deleteOne(
@@ -228,10 +231,10 @@ const deleteUser = asyncHanlder(async (req,res,next) =>{
         return res.status(response.statusCode).json(response)
     }).catch(err=>{
         if(err){
-            response = new Error("Unable to delete your account due to Internal server error during deletion!");
-            response.statusCode = 500;
-            response.name = "UserDeleteFailedError";
-            return next(response)
+            return next(new serverError(
+                "UserDeleteFailedError",
+                "Unable to delete your account due to internal server error during deletion!"
+            ))
         }
     });
 })

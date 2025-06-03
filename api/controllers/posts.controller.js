@@ -3,8 +3,7 @@ import { verifyToken } from "../utilities/auth.js";
 import User from '../models/user.model.js';
 import asyncHandler from "../utilities/asyncHandler.js";
 import { apiresponse } from "../helper/apiResponse.js";
-import { apiError, notFoundError } from "../helper/CustomError.js";
-import { name } from "ejs";
+import { clientError, notFoundError, serverError } from "../helper/CustomError.js";
 
 
 //all posts function
@@ -19,7 +18,7 @@ const getPosts = asyncHandler(async (req,res,next) =>{
     var banners;
 
     //category wise posts return
-    if(type==='undefined'){
+    if(!type){
         //if all posts
         posts = await Post.find(
             {},{},
@@ -179,11 +178,12 @@ const getPost = asyncHandler(async (req,res,next) =>{
         "userId",
         "username img name"
     );
-    if(post===null){
-        response = new Error("Post not found may be deleted");
-        response.statusCode = 404;
-        response.name = "PostNotFoundError";
-        return next(response)
+    if(!post){
+        return next(new clientError(
+            'PostNotFoundError',
+            "Post not found may be deleted!",
+            404
+        ))
     }
     if(!post.visits.includes(userInfo.result.id)){
         post.visits.push(userInfo.result.id)
@@ -209,14 +209,11 @@ const getPost = asyncHandler(async (req,res,next) =>{
     );
     //suggestions
     if(suggestPosts.length===0){
-        response = new notFoundError(
-            {
-                message:"suggested posts not found",
-                name:"SuggestionPostNotAvailable",
-                statusCode:500
-            }
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            'SuggestionPostNotAvailable',
+            'suggested posts not found!',
+            404
+        ))
     }
     //rename post
     const {userId, ...rest} = post.toObject();
@@ -243,16 +240,16 @@ const addPost = asyncHandler(async (req,res,next) =>{
     const { title, description, img, category } = req.body;
     var response;
 
-    //userId 
-    const token = req.cookies.uid
-    const userInfo = verifyToken(token);
-    //cookies expired
-    if(!userInfo.success){
-        response = new Error("Your session expired. Please login again");
-        response.statusCode = 401;
-        response.name = "SessionExpiredError";
-        return res.status(400).json(userInfo.err)
+    // if anything is missing 
+    if(!title || !description || !img || !category ){
+        return next(new clientError(
+            "validationError",
+            "fill all the required fields!"
+        ))
     }
+
+    //userId 
+    const userInfo = verifyToken(req.cookies.uid);
     //userdata
     const user = await User.findOne(
         {
@@ -261,10 +258,11 @@ const addPost = asyncHandler(async (req,res,next) =>{
     );
     //user exists
     if(!user){
-        response = new Error("Requested user does not exists!");
-        response.statusCode = 404;
-        response.name = "UserNotFoundError";
-        return next(response)
+        return next(new clientError(
+            "UserNotFoundError",
+            "Requested user does not exists!",
+            404
+        ))
     }
     // post upload
     await Post.create({
@@ -283,23 +281,19 @@ const addPost = asyncHandler(async (req,res,next) =>{
             return res.status(response.statusCode).json(response)
         }
     }).catch(err=>{
+        // server error
         if(err){
-            response = new apiError(
-                {
-                    message:"error on creating new post posting service unavailable!",
-                    name:"ServiceUnavailable"
-                },500
-            );
-            return res.status(response.statusCode).json(response)
+            return next(new clientError(
+                "serviceUnavailableError",
+                "error on creating new post posting service unavailable!"
+            ))
         }
+        // client error
+        return next(new serverError(
+            "serviceUnavailableError",
+            "Something went wrong!"
+        ))
     })
-
-    //response
-    response = new apiresponse(
-        "Post Uploaded successfully",
-        200
-    );
-    return res.status(response.statusCode).json(response)
 })
 
 
@@ -312,31 +306,23 @@ const partialUpdate = asyncHandler(async (req,res,next) =>{
 
     //cookies decoded
     const userInfo = verifyToken(req.cookies.uid);
-    //cookies expired
-    if(!userInfo.success){
-        response = new Error("Your session expired. Please log in again");
-        response.statusCode = 401;
-        response.name = "SessionExpiredError";
-        return next(response)
-    }
     //post
     const post = await Post.findOne({_id:postId});
     //if post not found
     if(!post){
-        response = new Error("The requested post for updating is not exists!");
-        response.statusCode = 404;
-        response.name = "PostNotFoundError";
-        return next(response)
+        return next(new clientError(
+            "PostNotFoundError",
+            "the requested post for updating is not exists!",
+            404
+        ))
     }
     //permisson
     if(post.userId._id.toString()!==userInfo.result.id){
-        response = new apiError(
-            {
-                message:"You don't have permisson to modify this post",
-                name:"UnauthorizedUserModificationError"
-            },403
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "UnauthorizedUserModificationError",
+            "you don't have permission to modify this post!",
+            403
+        ))
     }
     //update post 
     const updateResult = await Promise.all(
@@ -354,6 +340,7 @@ const partialUpdate = asyncHandler(async (req,res,next) =>{
             ).then(result=>{
                 return result.acknowledged
             }).catch(err=>{
+                // server error
                 if(err){
                     return false
                 }
@@ -362,10 +349,10 @@ const partialUpdate = asyncHandler(async (req,res,next) =>{
     );
     //post update or not
     if(updateResult.includes(false)){
-        response = new Error("Post hasn't updated");
-        response.statusCode = 500;
-        response.name = "PostUpdateFailedError";
-        return next(response)
+        return next(new serverError(
+            "PostUpdateFailedError",
+            "post hasn't updated!"
+        ))
     }
 
     //response
@@ -386,13 +373,6 @@ const deletePost = asyncHandler(async (req,res,next) =>{
 
     //cookies decoded
     const userInfo = verifyToken(req.cookies.uid);
-    //cookies expired
-    if(!userInfo.success){
-        response = new Error("Your session expired. Please log in again.");
-        response.statusCode = 401;
-        response.name = "SessionExpiredError";
-        return next(err)
-    }
     //post
     const post = await Post.findOne(
         {
@@ -401,20 +381,19 @@ const deletePost = asyncHandler(async (req,res,next) =>{
     );
     //post not exists
     if(!post){
-        response = new Error("this post not found may be deleted");
-        response.statusCode = 404;
-        response.name = "PostNotFoundError";
-        return next(response)
+        return next(new clientError(
+            "PostNotFoundError",
+            "this post not found may be deleted!",
+            404
+        ))
     }
     //permissons
     if(post.userId._id.toString()!==userInfo.result.id){
-        response = new apiError(
-            {
-                message:"You don't have permisson to delete this post",
-                name:"UnauthorizedUserModificationError"
-            },404
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "UnauthorizedUserModificationError",
+            "You don't have permission to delete this post!",
+            404
+        ))
     }
     //delete post
     await Post.deleteOne(
@@ -430,12 +409,20 @@ const deletePost = asyncHandler(async (req,res,next) =>{
         );
         return res.status(response.statusCode).json(response)
     }).catch(err=>{
+        // server error
         if(err){
-            response = new Error("The request for post delete request failed!");
-            response.statusCode = 500;
-            response.name = "PostDeleteFailedError";
-            return next(response)
+            return next(new serverError(
+                "PostDeleteFailedError",
+                "The request for post delete request failed!",
+                503
+            ))
         }
+        // client error
+        return next(new clientError(
+            "PostDeleteFailedError",
+            "The request for post delete request failed!",
+            404
+        ))
     });
 });
 

@@ -1,5 +1,6 @@
 import express from 'express';
 import { addPost, deletePost, getPost, getPosts, partialUpdate } from '../controllers/posts.controller.js';
+import { isValid } from '../middleware/isValid.js';
 const postRouter = express.Router();
 
 
@@ -8,19 +9,19 @@ postRouter.get('/',getPosts);
 
 
 //get single post
-postRouter.get("/:id",getPost);
+postRouter.get("/:id",isValid,getPost);
 
 
 //add post route
-postRouter.post('/addpost',addPost);
+postRouter.post('/add',isValid,addPost);
 
 
 //route for update partial post 
-postRouter.patch('/:id/change',partialUpdate);
+postRouter.patch('/:id/change',isValid,partialUpdate);
 
 
 //delete post route
-postRouter.delete('/:id/delete',deletePost);
+postRouter.delete('/:id/delete',isValid,deletePost);
 
 
 //export

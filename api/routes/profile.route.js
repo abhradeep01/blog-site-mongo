@@ -4,19 +4,19 @@ const profileRouter = express.Router();
 
 
 //route for getting own profile info
-profileRouter.get('/:username',getProfileInfo);
+profileRouter.get('/',getProfileInfo);
 
 
 //route for user's posts
-profileRouter.get('/:username/posts',getUsersPosts);
+profileRouter.get('/posts',getUsersPosts);
 
 
 //route for getting bookmarked post 
-profileRouter.get('/:username/saved',bookmarkedPosts);
+profileRouter.get('/saved',bookmarkedPosts);
 
 
 //route for getting liked post
-profileRouter.get('/:username/liked',likedPosts)
+profileRouter.get('/liked',likedPosts)
 
 
 // export

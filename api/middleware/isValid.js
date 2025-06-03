@@ -13,6 +13,7 @@ export const isValid = asyncHanlder(async (req,res,next) =>{
             '/login',
             'unauthenticted user please login!',
             401,
+            null,
             "UnauthenticatedUserError"
         );
         return res.status(response.statusCode).json(response)
@@ -26,6 +27,7 @@ export const isValid = asyncHanlder(async (req,res,next) =>{
             '/login',
             'session expired login again!',
             401,
+            null,
             "SessionExpired"
         );
         return res.status(response.statusCode).json(response)

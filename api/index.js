@@ -28,14 +28,13 @@ app.use(cors({
 app.use(express.json({limit:'10mb'}));
 app.use(express.urlencoded({limit:'10mb',extended:true}));
 
-
 //setting template engine
 app.set('view engine','ejs');
 app.set('views',path.resolve('./views'));
 
 //api routes
 app.use('/api/user',isValid,userRouter);
-app.use('/api/posts',isValid,postRouter);   
+app.use('/api/posts',postRouter);   
 app.use('/api/auth',authRouter);
 app.use('/api/upload',uploadRouter);
 app.use('/api/comment',isValid,commentRouter);
@@ -48,17 +47,7 @@ app.all('*',(req,res,next)=>{
     return next(err)
 });
 
-
 //global error handler middleware
 app.use(errorHandler);
 
-
-//port 
-app.listen(process.env.PORT || 8080,()=>{
-    console.log('connected!');
-    connectDb();
-});
-
-app.on('error',(err)=>{
-    console.log(err);
-})
+export default app;

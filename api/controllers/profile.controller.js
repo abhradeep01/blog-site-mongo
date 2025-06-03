@@ -3,7 +3,7 @@ import { verifyToken } from "../utilities/auth.js";
 import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import { apiresponse } from "../helper/apiResponse.js";
-import { apiError } from "../helper/CustomError.js";
+import { apiError, clientError } from "../helper/CustomError.js";
 
 
 //function for getting own profile
@@ -32,13 +32,11 @@ const getProfileInfo = asyncHanlder(async(req,res,next)=>{
     );
     //if user not found
     if(!user){
-        response = new apiError(
-            {
-                message:`User ${username} not found!`,
-                name:"UserNotExistsError"
-            },404
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "UserNotFoundError",
+            "user not found!",
+            404
+        ))
     }
     
     //config response
@@ -74,14 +72,11 @@ const getUsersPosts = asyncHanlder(async (req,res,next)=>{
     );
     //if user posts not found
     if(posts.length===0){
-        response = new apiError(
-            {
-                message:"You haven't posted any Blog or Article!",
-                name:"NotFound"
-            },
+        return next(new clientError(
+            "NotFound",
+            "You haven't posted any Blog or Article!",
             404
-        );
-        return res.status(response.statusCode).json(response)
+        ))
     }
     //rename
     const renamed = posts.map(post=>{
@@ -128,13 +123,11 @@ const bookmarkedPosts = asyncHanlder(async(req,res,next)=>{
     );
     //bookmarked posts not found
     if(savedPosts.length===0){
-        response = new apiError(
-            {
-                name:"NotFound!",
-                message:"Saved posts not found!"
-            },404
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "NotFound",
+            "Saved posts not found",
+            404
+        ))
     }
         
     //response cofig
@@ -174,13 +167,11 @@ const likedPosts = asyncHanlder(async(req,res,next)=>{
     );
     //liked posts not exists
     if(likedPosts.length===0){
-        response = new apiError(
-            {
-                message:"You haven't liked any post!",
-                name:"NotFoundError!"
-            },404
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "NotFoundError",
+            "You haven't liked any post",
+            404
+        ))
     }
 
     //response config

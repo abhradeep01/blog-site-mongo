@@ -9,20 +9,11 @@ import { apiresponse } from "../helper/apiResponse.js";
 const liked = asyncHanlder(async (req,res,next) =>{
     //postId
     const postId = req.params.id;
-    //cookie
-    const cookie = req.cookies.uid;
     //response
     var response;
 
     //user
-    const userInfo = verifyToken(cookie);
-    //if cookies expired
-    if(!userInfo.success){
-        response = new Error("Your session expired. Please log in again.");
-        response.statusCode = 401;
-        response.name = "SessionExpiredError";
-        return next(response)
-    }
+    const userInfo = verifyToken(req.cookies.uid);
     //user id
     const userId = userInfo.result.id;
     //user
@@ -74,20 +65,11 @@ const liked = asyncHanlder(async (req,res,next) =>{
 const unliked = asyncHanlder(async (req,res,next) =>{
     //postId
     const postId = req.params.id;
-    //cookie
-    const token = req.cookies.uid;
     //response
     var response;
 
     //verify cookies
-    const userInfo = verifyToken(token);
-    //if user cookie expired
-    if(!userInfo.success){
-        response = new Error("Your session expired. Please log in again.");
-        response.statusCode = 401;
-        response.name = "SessionExpiredError";
-        return next(response)
-    }
+    const userInfo = verifyToken(req.cookies.uid);
     //userid
     const userId = userInfo.result.id;
     //user
