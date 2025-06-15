@@ -14,11 +14,11 @@ const authValid = asyncHanlder(async (req,res,next)=>{
             'unauthenticted user please login!',
             401,
             "",
-            "UnauthenticatedUserError"
+            "UnauthenticatedError"
         );
         return res.status(response.statusCode).json(response)
     }
-
+    // token decoded
     const authInfo = verifyToken(authToken);
     //cookie expired
     if(!authInfo.success){
@@ -31,6 +31,8 @@ const authValid = asyncHanlder(async (req,res,next)=>{
         );
         return res.status(response.statusCode).json(response)
     }
+
+    // next
     next()
 })
 

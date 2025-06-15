@@ -11,7 +11,6 @@ const liked = asyncHanlder(async (req,res,next) =>{
     const postId = req.params.id;
     //response
     var response;
-
     //user
     const userInfo = verifyToken(req.cookies.uid);
     //user id
@@ -50,14 +49,12 @@ const liked = asyncHanlder(async (req,res,next) =>{
         );
         return res.status(response.statusCode).json(response)
     }
-
     //response
-    response = new actionError(
-        "can't like - post liked already",
-        "InvalidActionError",
-        "liked"
-    );
-    return res.status(response.statusCode).json(response)
+    return next(new actionError(
+        "can't - post like already!",
+        "invalidActionError",
+        "like"
+    ))
 })
 
 
@@ -67,7 +64,6 @@ const unliked = asyncHanlder(async (req,res,next) =>{
     const postId = req.params.id;
     //response
     var response;
-
     //verify cookies
     const userInfo = verifyToken(req.cookies.uid);
     //userid
@@ -99,7 +95,6 @@ const unliked = asyncHanlder(async (req,res,next) =>{
         //removing user from post
         post.liked.pop(userId);
         await post.save();
-
         //response config
         response = new apiresponse(
             `post unliked by ${userInfo.result.username}`,
@@ -107,14 +102,12 @@ const unliked = asyncHanlder(async (req,res,next) =>{
         );
         return res.status(response.statusCode).json(response)
     }
-
     //response
-    response = new actionError(
+    return next(new actionError(
         "can't unliked - post currently not liked",
-        "InvalidActionError",
+        "invalidActionError",
         "unliked"
-    )
-    return res.status(response.statusCode).json(response)
+    ))
 })
 
 
@@ -126,16 +119,8 @@ const saved = asyncHanlder(async (req,res,next) =>{
     const token = req.cookies.uid;
     //response
     var response;
-
     //verify cookies 
     const userInfo = verifyToken(token);
-    //if cookies expired
-    if(!userInfo.success){
-        response = new Error("Your session expired. Please log in again.");
-        response.statusCode = 401;
-        response.name = "SessionExpiredError";
-        return next(response)
-    }
     //user id
     const userId = userInfo.result.id;
     //user
@@ -173,7 +158,6 @@ const saved = asyncHanlder(async (req,res,next) =>{
         );
         return res.status(response.statusCode).json(response)
     }
-
     //error durring saved
     response = new actionError(
         "can't saved - post currently already saved",
@@ -192,16 +176,8 @@ const unsaved = asyncHanlder(async (req,res,next) =>{
     const token = req.cookies.uid;
     //response
     var response;
-
     //verify cookies
     const userInfo = verifyToken(token);
-    //cookie expired
-    if(!userInfo.success){
-        response = new Error("Your session expired. Please log in again.");
-        response.statusCode = 401;
-        response.name = "SessionExpiredError";
-        return next(response)
-    }
     //user id
     const userId = userInfo.result.id;
     //user
@@ -238,14 +214,12 @@ const unsaved = asyncHanlder(async (req,res,next) =>{
         );
         return res.status(response.statusCode).json(response)
     }
-
     //error during removing from bookmarked
-    response = new actionError(
+    return next(new actionError(
         "can't unbookmarked - post currently unbookmarked already",
         "InvalidActionError",
         "unsaved"
-    );
-    return res.status(response.statusCode).json(response)
+    ))
 })
 
 

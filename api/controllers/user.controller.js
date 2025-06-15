@@ -2,7 +2,7 @@ import asyncHanlder from "../utilities/asyncHandler.js"
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
 import { verifyToken } from "../utilities/auth.js";
-import { apiError, clientError, notFoundError, serverError } from "../helper/CustomError.js";
+import { clientError, serverError } from "../helper/CustomError.js";
 import { apiresponse } from "../helper/apiResponse.js";
 
 
@@ -12,7 +12,6 @@ const userInfo = asyncHanlder(async (req,res,next) =>{
     const userid = req.params.id;
     //response
     var response;
-
     //uservalid
     await User.findById(
         {
@@ -52,7 +51,6 @@ const userInfo = asyncHanlder(async (req,res,next) =>{
             404
         ))
     });
-
 });
 
 
@@ -61,7 +59,6 @@ const getUserPosts = asyncHanlder(async (req,res,next) =>{
     const userId = req.params.id;
     //response
     var response;
-
     //user
     const user = await User.findById(
         {
@@ -124,7 +121,6 @@ const userPartialUpdate = asyncHanlder(async (req,res,next) =>{
     const newInfo = req.body;
     //response
     var response;
-    
     //cookies decoded
     const userInfo = verifyToken(req.cookies.uid);
     //user access denied
@@ -178,7 +174,6 @@ const userPartialUpdate = asyncHanlder(async (req,res,next) =>{
             503
         ))
     }
-
     // response after done updating
     response = new apiresponse(
         `${Object.keys(newInfo).map(key => key+" ")}updated successfully`,
@@ -194,13 +189,12 @@ const deleteUser = asyncHanlder(async (req,res,next) =>{
     const userId = req.params.id;
     // response
     var response;
-
     //cookies decoded
     const userInfo = verifyToken(req.cookies.uid);
     //user had no permit to edit
     if(userId!=userInfo.result.id){
         return next(new clientError(
-            "UnauthorizedUserModificationError",
+            "unauthorizedUserModificationError",
             "You don't have permisson to delete user!",
             403
         ))
@@ -214,7 +208,7 @@ const deleteUser = asyncHanlder(async (req,res,next) =>{
     //user not exists
     if(!user){
         return next(new serverError(
-            "InternalServerError",
+            "internalServerError",
             "The requested user account not found due to Internal server error!"
         ))
     }
@@ -232,7 +226,7 @@ const deleteUser = asyncHanlder(async (req,res,next) =>{
     }).catch(err=>{
         if(err){
             return next(new serverError(
-                "UserDeleteFailedError",
+                "userDeleteFailedError",
                 "Unable to delete your account due to internal server error during deletion!"
             ))
         }

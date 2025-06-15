@@ -15,10 +15,8 @@ const getPostsAllComments = asyncHanlder(async (req,res,next)=>{
     const token = req.cookies.uid;
     //response
     var response;
-
-    //cookies 
+    //cookies decoded
     const userInfo = verifyToken(token);
-    
     //user id
     const userId = userInfo.result.id;
     //post does exsits
@@ -30,7 +28,7 @@ const getPostsAllComments = asyncHanlder(async (req,res,next)=>{
     //user does not exists
     if(!user){
         return next(new clientError(
-            "UserNotExistsError",
+            "userDoesNotExistsError",
             "The requested user does not exists!",
             404
         ))
@@ -50,7 +48,7 @@ const getPostsAllComments = asyncHanlder(async (req,res,next)=>{
         //no comments found
         if(postComments.length===0){
             return next(new clientError(
-                "CommentsNotFoundError",
+                "commentsNotFoundError",
                 "no comments found yet!",
                 404
             ))
@@ -66,14 +64,14 @@ const getPostsAllComments = asyncHanlder(async (req,res,next)=>{
         // server error
         if(err){
             return next(new clientError(
-                "PostNotFoundError",
+                "postNotFoundError",
                 err,
                 500
             ))
         }
         // client error
         return next(new clientError(
-            "PostNotFoundError",
+            "postNotFoundError",
             "the requested post does not exists!",
             404
         ))
@@ -89,10 +87,8 @@ const addComment = asyncHanlder(async(req,res,next)=>{
     const { commentText } = req.body;
     //response
     var response;
-
     //cookies decode
     const userInfo = verifyToken(req.cookies.uid);
-
     //user id
     const userId = userInfo.result.id;
     //user
@@ -104,10 +100,11 @@ const addComment = asyncHanlder(async(req,res,next)=>{
     );
     //if user not exists 
     if(!user){
-        response = new Error("the requested user does not exists!");
-        response.statusCode = 404;
-        response.name = "UserNotFoundError";
-        return next(response)
+        return next(new clientError(
+            "userDoesNotExistsError",
+            "the requested user does not exists!",
+            404
+        ))
     }
     //post
     const post = await Post.findOne(
@@ -120,12 +117,12 @@ const addComment = asyncHanlder(async(req,res,next)=>{
     );
     //post does not exists
     if(!post){
-        response = new Error("The post you're trying to comment on doesn't exist");
-        response.statusCode = 404;
-        response.name = "CommentTargetNotFoundError";
-        return next(response)
+        return next(new clientError(
+            "postNotFoundError",
+            "The post you're trying to comment doesn't exists!",
+            404
+        ))
     }
-
     //create comment
     const newComment = await Comment.create({
         user: userId,
@@ -144,12 +141,12 @@ const addComment = asyncHanlder(async(req,res,next)=>{
     });
     //new comment not created
     if(!newComment.success){
-        response = new Error(newComment.err.message);
-        response.statusCode = 500;
-        response.name = "CommentPersistError";
-        return next(response)
+        return next(new serverError(
+            "unableToComment",
+            newComment.err.message,
+            500
+        ))
     }
-
     //user id add to post
     post.commented.push(userId);
     await post.save().then(result=>{
@@ -164,11 +161,13 @@ const addComment = asyncHanlder(async(req,res,next)=>{
             return res.status(response.statusCode).json(response)
         }
     }).catch(err=>{
+        // server error
         if(err){
-            response = new Error(err.message);
-            response.statusCode = 500 ;
-            response.name = "CommentSavedError";
-            return next(response)
+            return next(new clientError(
+                "commentSavedError",
+                err.message,
+                500
+            ))
         }
     })
 })
@@ -184,7 +183,6 @@ const editComment = asyncHanlder(async(req,res,next)=>{
     var response;
     //cookies 
     const userInfo = verifyToken(req.cookies.uid);
-
     //user
     const user = await User.findOne(
         {
@@ -203,12 +201,11 @@ const editComment = asyncHanlder(async(req,res,next)=>{
     });
     //if user does not exists
     if(!user){
-        response = new clientError(
-            "UserNotFoundError",
+        return next(new clientError(
+            "userNotFoundError",
             "the requested user does not exists!",
             404
-        );
-        return res.status(response.statusCode).json(response)
+        ))
     }
     // comment
     const comment = await Comment.findOne(
@@ -218,22 +215,19 @@ const editComment = asyncHanlder(async(req,res,next)=>{
     );
     // if comment not exists
     if(!comment){
-        response = new clientError(
-            "CommentNotFound",
-            'requested comment not found!',
+        return next(new clientError(
+            "commentsNotFoundError",
+            "requested comment not found!",
             404
-        );
-        return res.status(response.statusCode).json(response)
+        ))
     }
     //permissons
     if(comment.user.toString()!==userInfo.result.id){
-        response = new apiError(
-            {
-                message:"You don't have permissons to edit this comment",
-                name:"UnauthorizedUserModificationError"
-            },403
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "unauthorizedUserModificationError",
+            "you don't have permisson to edit this comment!",
+            403
+        ))
     }
     //post update
     await Comment.updateOne(
@@ -264,15 +258,16 @@ const editComment = asyncHanlder(async(req,res,next)=>{
     }).catch(err=>{
         // server error
         if(err){
-            response = new Error("Unable to update comment!");
-            response.statusCode = 503;
-            response.name = "CommentUpdateError";
-            return next(response)
+            return next(new serverError(
+                'commentUpdateError',
+                "unable to update comment!",
+                403
+            ))
         }
         // client error
         response = new clientError(
-            "CommentUpdateError",
-            "Unable to update comment",
+            "commentUpdateError",
+            "Unable to update comment!"
         );
         return res.status(response.statusCode).json(response)
     });
@@ -297,7 +292,7 @@ const deleteComment = asyncHanlder(async(req,res,next)=>{
     //if user not exists
     if(!user){
         response = new clientError(
-            "UserNotFoundError",
+            "userNotFoundError",
             "the requested user does not exists!",
             404
         )
@@ -312,7 +307,7 @@ const deleteComment = asyncHanlder(async(req,res,next)=>{
     //if comment not found
     if(!comment){
         response = new clientError(
-            "CommentNotFoundError",
+            "commentNotFoundError",
             "The requested comment for deletion does not exists!",
             404
         );
@@ -320,13 +315,11 @@ const deleteComment = asyncHanlder(async(req,res,next)=>{
     }
     //permissons
     if(comment.user.toString()!==userInfo.result.id){
-        response = new apiError(
-            {
-                message:"You don't have permisson to delete this comment",
-                name:"UnauthorizedUserModificationError"
-            },403
-        );
-        return res.status(response.statusCode).json(response)
+        return next(new clientError(
+            "unauthorizedUserModificationError",
+            "you don't have permisson to delete this comment!",
+            403
+        ))
     }
     //delete comment
     await Comment.deleteOne(
@@ -342,15 +335,15 @@ const deleteComment = asyncHanlder(async(req,res,next)=>{
         // server error
         if(err){
             return next(new serverError(
-                "CommentDeleteConflict",
+                "commentDeleteConflict",
                 err,
                 500
             ))
         }
         // client error
         return next(new clientError(
-            "CommentDeleteConflict",
-            "Unable to delete comment"
+            "commentDeleteConflict",
+            "Unable to delete comment!"
         ))
     });
 })

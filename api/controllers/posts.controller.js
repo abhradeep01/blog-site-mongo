@@ -3,7 +3,7 @@ import { verifyToken } from "../utilities/auth.js";
 import User from '../models/user.model.js';
 import asyncHandler from "../utilities/asyncHandler.js";
 import { apiresponse } from "../helper/apiResponse.js";
-import { clientError, notFoundError, serverError } from "../helper/CustomError.js";
+import { clientError, serverError } from "../helper/CustomError.js";
 
 
 //all posts function
@@ -16,7 +16,6 @@ const getPosts = asyncHandler(async (req,res,next) =>{
     var ads;
     //banner
     var banners;
-
     //category wise posts return
     if(!type){
         //if all posts
@@ -64,7 +63,6 @@ const getPosts = asyncHandler(async (req,res,next) =>{
                 user:userId
             }
         })
-
         //response
         response = new apiresponse(
             "all posts",
@@ -128,13 +126,10 @@ const getPosts = asyncHandler(async (req,res,next) =>{
     );
     //posts not found 
     if(posts.length===0){
-        response = new notFoundError(
-            {
-                name:"category error",
-                message:`('${type}') type posts are not found!`,
-            }
-        );
-        return next(response)
+        return next(new clientError(
+            "categoryError",
+            `('${type}') type posts are not found!`
+        ))
     }
     //rename userId field
     const renamePosts = posts.map(post=>{
@@ -145,7 +140,6 @@ const getPosts = asyncHandler(async (req,res,next) =>{
             user:userId
         }
     })
-
     //response
     response = new apiresponse(
         `${type} type posts`,
@@ -166,7 +160,6 @@ const getPost = asyncHandler(async (req,res,next) =>{
     const postId = req.params.id;
     //response
     var response;
-
     //cookies 
     const userInfo = verifyToken(req.cookies.uid);
     //post
@@ -180,7 +173,7 @@ const getPost = asyncHandler(async (req,res,next) =>{
     );
     if(!post){
         return next(new clientError(
-            'PostNotFoundError',
+            'postNotFoundError',
             "Post not found may be deleted!",
             404
         ))
@@ -207,28 +200,22 @@ const getPost = asyncHandler(async (req,res,next) =>{
         "userId",
         "username"
     );
-    //suggestions
-    if(suggestPosts.length===0){
-        return next(new clientError(
-            'SuggestionPostNotAvailable',
-            'suggested posts not found!',
-            404
-        ))
-    }
     //rename post
     const {userId, ...rest} = post.toObject();
-
     //response config
-    response = new apiresponse("Post found successfully",200,{
-        ...rest,
-        user:userId,
-        suggestions:suggestPosts.map(ele=>{
-            const {userId, ...rest} = ele.toObject()
-            return {
-                ...rest,
-                user:userId 
-            }
-        })
+    response = new apiresponse(
+        "Post found successfully",
+        200,
+        {
+            ...rest,
+            user:userId,
+            suggestions:suggestPosts.map(ele=>{
+                const {userId, ...rest} = ele.toObject()
+                return {
+                    ...rest,
+                    user:userId 
+                }
+            })
     });
     return res.status(response.statusCode).json(response)
 });
@@ -239,7 +226,6 @@ const addPost = asyncHandler(async (req,res,next) =>{
     // post info 
     const { title, description, img, category } = req.body;
     var response;
-
     // if anything is missing 
     if(!title || !description || !img || !category ){
         return next(new clientError(
@@ -247,7 +233,6 @@ const addPost = asyncHandler(async (req,res,next) =>{
             "fill all the required fields!"
         ))
     }
-
     //userId 
     const userInfo = verifyToken(req.cookies.uid);
     //userdata
@@ -259,7 +244,7 @@ const addPost = asyncHandler(async (req,res,next) =>{
     //user exists
     if(!user){
         return next(new clientError(
-            "UserNotFoundError",
+            "userNotFoundError",
             "Requested user does not exists!",
             404
         ))
@@ -303,7 +288,6 @@ const partialUpdate = asyncHandler(async (req,res,next) =>{
     const postId = req.params.id;
     //response
     var response;
-
     //cookies decoded
     const userInfo = verifyToken(req.cookies.uid);
     //post
@@ -311,7 +295,7 @@ const partialUpdate = asyncHandler(async (req,res,next) =>{
     //if post not found
     if(!post){
         return next(new clientError(
-            "PostNotFoundError",
+            "postNotFoundError",
             "the requested post for updating is not exists!",
             404
         ))
@@ -319,7 +303,7 @@ const partialUpdate = asyncHandler(async (req,res,next) =>{
     //permisson
     if(post.userId._id.toString()!==userInfo.result.id){
         return next(new clientError(
-            "UnauthorizedUserModificationError",
+            "unauthorizedUserModificationError",
             "you don't have permission to modify this post!",
             403
         ))
@@ -350,7 +334,7 @@ const partialUpdate = asyncHandler(async (req,res,next) =>{
     //post update or not
     if(updateResult.includes(false)){
         return next(new serverError(
-            "PostUpdateFailedError",
+            "postUpdateFailedError",
             "post hasn't updated!"
         ))
     }
@@ -382,7 +366,7 @@ const deletePost = asyncHandler(async (req,res,next) =>{
     //post not exists
     if(!post){
         return next(new clientError(
-            "PostNotFoundError",
+            "postNotFoundError",
             "this post not found may be deleted!",
             404
         ))
@@ -390,7 +374,7 @@ const deletePost = asyncHandler(async (req,res,next) =>{
     //permissons
     if(post.userId._id.toString()!==userInfo.result.id){
         return next(new clientError(
-            "UnauthorizedUserModificationError",
+            "unauthorizedUserModificationError",
             "You don't have permission to delete this post!",
             404
         ))
@@ -412,14 +396,14 @@ const deletePost = asyncHandler(async (req,res,next) =>{
         // server error
         if(err){
             return next(new serverError(
-                "PostDeleteFailedError",
+                "postDeleteFailedError",
                 "The request for post delete request failed!",
                 503
             ))
         }
         // client error
         return next(new clientError(
-            "PostDeleteFailedError",
+            "postDeleteFailedError",
             "The request for post delete request failed!",
             404
         ))

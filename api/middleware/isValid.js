@@ -6,7 +6,6 @@ import routeResponse from "../helper/routingResponse.js";
 export const isValid = asyncHanlder(async (req,res,next) =>{
     const token = req.cookies.uid;
     var response;
-    
     //if token doesn't exists
     if(!token){
         response = new routeResponse(
@@ -18,17 +17,16 @@ export const isValid = asyncHanlder(async (req,res,next) =>{
         );
         return res.status(response.statusCode).json(response)
     }
-
     //decode token
     const info = verifyToken(token);
-
+    // token session expired
     if(info.success===false){
         response = new routeResponse(
             '/login',
             'session expired login again!',
             401,
             null,
-            "SessionExpired"
+            "UserSessionExpired"
         );
         return res.status(response.statusCode).json(response)
     }

@@ -60,7 +60,7 @@ const register = asyncHanlder(async(req,res,next)=>{
         //error on mail sending 
         if(!messageRes.success){
             return next(new serverError(
-                "EmailDeliveryError",
+                "emailDeliveryError",
                 "failed to send verification code!",
                 503
             ))
@@ -94,7 +94,7 @@ const register = asyncHanlder(async(req,res,next)=>{
         // server error
         if(err){
             return next(new serverError(
-                "ServiceUnavailable",
+                "serviceUnavailableError",
                 "Error on registering user service unavailable",
                 503
             ))
@@ -132,7 +132,7 @@ const login = asyncHanlder(async (req,res,next) =>{
     //user not exists
     if(!user){
         return next(new clientError(
-            "UserNotFoundError",
+            "userDoesNotExistsError",
             `user does not exists with this ${username + " username" || email + " email"}!`,
             404
         ))
@@ -154,7 +154,7 @@ const login = asyncHanlder(async (req,res,next) =>{
     //error on mail sending 
     if(!messageRes.success){
         return next(new serverError(
-            "EmailDeliveryError",
+            "emailDeliveryError",
             "failed to send verification code!",
             503
         ));
@@ -213,7 +213,7 @@ const findUser = asyncHanlder(async (req,res,next)=>{
     //user not found
     if(!user){
         return next(new serverError(
-            "UserNotFoundError!",
+            "userDoesNotExistsError!",
             `User not exists with this ${username?"username":"email"} ${username?username:email}`,
             404
         ))
@@ -227,7 +227,7 @@ const findUser = asyncHanlder(async (req,res,next)=>{
     //email not sent
     if(!messageRes.success){
         return next(new serverError(
-            "EmailDeliveryError",
+            "emailDeliveryError",
             "failed to send verification code!",
             503
         ))
@@ -276,7 +276,7 @@ const resend = asyncHanlder(async (req,res,next) =>{
     //if email is invalid
     if(!user){
         return next(new clientError(
-            "InvalidEmailError",
+            "invalidEmailError",
             'Invalid email please insert valid email!'
         ))
     }
@@ -289,7 +289,7 @@ const resend = asyncHanlder(async (req,res,next) =>{
     //email not sent
     if(!messageRes.success){
         return next(new serverError(
-            "EmailDeliveryError",
+            "emailDeliveryError",
             "failed to send verification code!",
             503
         ))
@@ -333,7 +333,7 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
     //user not exists
     if(!user){
         return next(new clientError(
-            "userNotExistsError",
+            "userDoesNotExistsError",
             "User not exists with email!",
             404
         ))
@@ -341,7 +341,7 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
     // otp not matched
     if(Number(otp) !== user.otp){
         return next(new clientError(
-            "InvalidOTPError",
+            "invalidOTPError",
             "The verification code you entered is incorrect!",
             400
         ))
@@ -364,31 +364,6 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
         user.isVerified = true;
     }
     await user.save();
-    //if for one time
-    if(!authInfo.result.remember){
-        token = createToken(
-            {
-                id: user._id,
-                username: user.username,
-                email: user.email
-            }
-        );
-
-        //remove auth cookie
-        res.clearCookie('auth_id',{
-            httpOnly:true,
-            secure:true,
-            sameSite:"strict",
-            path:'/'
-        })
-        return res.cookie("uid",token,{
-            maxAge:3600000,
-            expires:new Date(Date.now+3600000),
-            sameSite: "strict",
-            httpOnly: true,
-            secure: true
-        }).status(response.statusCode).json(response)
-    }
     //for log term
     token = createToken({
         id: user._id,
@@ -403,8 +378,8 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
         path:'/'
     })
     res.cookie("uid",token,{
-        maxAge:86400000,
-        expires: new Date(Date.now()+86400000),
+        maxAge:authInfo.result.remember?86400000:3600000,
+        expires: new Date(Date.now()+authInfo.result.remember?86400000:3600000),
         sameSite:"strict",
         httpOnly: true,
         secure: true
@@ -431,7 +406,7 @@ const changePassword = asyncHanlder(async (req,res,next) =>{
     //user not exists
     if(!user){
         return next(new clientError(
-            "UserNotFoundError",
+            "userDoesNotExistsError",
             "No user found with this email",
             404
         ))
@@ -439,7 +414,7 @@ const changePassword = asyncHanlder(async (req,res,next) =>{
     //check if new password is same to the previous one
     if(bcrypt.compareSync(newpassword,user.password)){
         return next(new clientError(
-            "SamePasswordError",
+            "samePasswordError",
             'new password is same as previous password!'
         ))
     }
@@ -463,7 +438,7 @@ const changePassword = asyncHanlder(async (req,res,next) =>{
     //pasword not updated
     if(!updatedoc.acknowledged){
         return next(new serverError(
-            "PasswordUpdateFailure",
+            "passwordUpdateFailure",
             'unable to change password!',
             503
         ))

@@ -43,11 +43,11 @@ class apiError {
   
   //action error
   class actionError {
-    constructor(message,name,action,statusCode){
+    constructor(message,errorname,action,statusCode){
       this.statusCode = statusCode || 409;
       this.success = false;
       this.message = message;
-      this.errorname = name;
+      this.errorname = errorname;
       this.action = action;
     }
   }

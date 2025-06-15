@@ -11,8 +11,7 @@ const getProfileInfo = asyncHanlder(async(req,res,next)=>{
     //verify cookie
     const info = verifyToken(req.cookies.uid);
     //response
-    var response;
-    
+    var response;    
     //userinfo
     const user = await User.findOne(
         {
@@ -33,7 +32,7 @@ const getProfileInfo = asyncHanlder(async(req,res,next)=>{
     //if user not found
     if(!user){
         return next(new clientError(
-            "UserNotFoundError",
+            "userNotFoundError",
             "user not found!",
             404
         ))
@@ -60,7 +59,6 @@ const getUsersPosts = asyncHanlder(async (req,res,next)=>{
     const userinfo = verifyToken(req.cookies.uid);
     //response
     var response;
-
     //users posts
     const posts = await Post.find(
         {
@@ -73,7 +71,7 @@ const getUsersPosts = asyncHanlder(async (req,res,next)=>{
     //if user posts not found
     if(posts.length===0){
         return next(new clientError(
-            "NotFound",
+            "postNotFound",
             "You haven't posted any Blog or Article!",
             404
         ))
@@ -103,7 +101,6 @@ const bookmarkedPosts = asyncHanlder(async(req,res,next)=>{
     const info = verifyToken(req.cookies.uid);
     //response
     var response;
-
     //bookmarked posts
     const {savedPosts} = await User.findOne(
         {
@@ -124,12 +121,11 @@ const bookmarkedPosts = asyncHanlder(async(req,res,next)=>{
     //bookmarked posts not found
     if(savedPosts.length===0){
         return next(new clientError(
-            "NotFound",
+            "postNotFound",
             "Saved posts not found",
             404
         ))
     }
-        
     //response cofig
     response = new apiresponse(
         "saved post found",
@@ -146,7 +142,6 @@ const likedPosts = asyncHanlder(async(req,res,next)=>{
     const info = verifyToken(req.cookies.uid);
     //response
     var response;
-
     //liked posts
     const {likedPosts} = await User.findOne(
         {
@@ -173,7 +168,6 @@ const likedPosts = asyncHanlder(async(req,res,next)=>{
             404
         ))
     }
-
     //response config
     response = new apiresponse(
         "liked post's found successfully",
