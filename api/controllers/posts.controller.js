@@ -354,7 +354,6 @@ const deletePost = asyncHandler(async (req,res,next) =>{
     const postId = req.params.id;
     // response
     var response;
-
     //cookies decoded
     const userInfo = verifyToken(req.cookies.uid);
     //post
@@ -376,7 +375,7 @@ const deletePost = asyncHandler(async (req,res,next) =>{
         return next(new clientError(
             "unauthorizedUserModificationError",
             "You don't have permission to delete this post!",
-            404
+            403
         ))
     }
     //delete post

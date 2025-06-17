@@ -27,7 +27,7 @@ const authValid = asyncHanlder(async (req,res,next)=>{
             'session expired login again!',
             401,
             "",
-            "userSessionExpired",
+            "userSessionExpired"
         );
         return res.status(response.statusCode).json(response)
     }

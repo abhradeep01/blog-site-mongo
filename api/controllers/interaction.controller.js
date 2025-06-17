@@ -141,7 +141,6 @@ const saved = asyncHanlder(async (req,res,next) =>{
             bookmarked:1
         }
     );
-
     //if post not saved by this user
     if(!user.savedPosts.includes(postId) && !post.bookmarked.includes(userId)){
         //post saved to user

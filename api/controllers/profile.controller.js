@@ -3,7 +3,7 @@ import { verifyToken } from "../utilities/auth.js";
 import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import { apiresponse } from "../helper/apiResponse.js";
-import { apiError, clientError } from "../helper/CustomError.js";
+import { clientError } from "../helper/CustomError.js";
 
 
 //function for getting own profile
@@ -37,7 +37,6 @@ const getProfileInfo = asyncHanlder(async(req,res,next)=>{
             404
         ))
     }
-    
     //config response
     response = new apiresponse(
         "User info send successfully",
@@ -84,7 +83,6 @@ const getUsersPosts = asyncHanlder(async (req,res,next)=>{
             user:userId
         }
     });
-
     //response config
     response = new apiresponse(
         "users post found",

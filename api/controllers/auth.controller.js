@@ -16,7 +16,6 @@ const register = asyncHanlder(async(req,res,next)=>{
     const { name, username, email, password, img } = req.body;
     // response
     var response;
-
     //validate fields
     if(!name || !username || !email || !password || !img){
         return next(new clientError(
@@ -114,7 +113,6 @@ const login = asyncHanlder(async (req,res,next) =>{
     const { username, email, password, remember } = req.body;
     //response
     var response;
-
     //check field valid
     if(!((username || email) && password)){
         return next(new clientError(
@@ -193,7 +191,6 @@ const findUser = asyncHanlder(async (req,res,next)=>{
     const { email, username } = req.body;
     //response
     var response;
-
     //email or username not sent
     if(!email && !username){
         return next(new clientError(
@@ -266,7 +263,6 @@ const resend = asyncHanlder(async (req,res,next) =>{
     var response;
     //auth info
     const authInfo = verifyToken(req.cookies.auth_id);
-
     //check if email exists in database
     const user = await User.findOne(
         {
@@ -316,7 +312,6 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
     var token;
     //auth info
     const authInfo = verifyToken(req.cookies.auth_id);
-    
     //if otp not send
     if(!otp){
         return next(new clientError(
@@ -396,7 +391,6 @@ const changePassword = asyncHanlder(async (req,res,next) =>{
     var response;
     //auth
     const authInfo = verifyToken(req.cookies.auth_id);
-
     //user
     const user = await User.findOne(
         {
@@ -443,7 +437,6 @@ const changePassword = asyncHanlder(async (req,res,next) =>{
             503
         ))
     }
-
     //response config
     response = new routeResponse(
         "/changed",

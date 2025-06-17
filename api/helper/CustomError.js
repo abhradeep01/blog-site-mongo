@@ -1,26 +1,3 @@
-//error on api
-class apiError {
-  constructor(error, statusCode) {
-    this.statusCode = statusCode < 500 && statusCode >= 400 ? statusCode : 400;
-    this.message = error.message;
-    this.success = false;
-    this.errorname = error.name;
-  }
-}
-
-
-  //not found error
-  class notFoundError extends Error{
-    constructor(error,message,){
-      super(message);
-      this.errorName = error.name || "ServerError";
-      this.message = error.message || "Internal server error";
-      this.statusCode = error.statusCode || 500;
-      this.success = false;
-    }
-  }
-
-
   //client error
   class clientError {
     constructor(errorname,message,statusCode){
@@ -53,4 +30,4 @@ class apiError {
   }
 
 
-  export { apiError, notFoundError, serverError, actionError, clientError };
+  export { serverError, actionError, clientError };

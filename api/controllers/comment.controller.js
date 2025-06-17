@@ -4,7 +4,7 @@ import Post from '../models/post.model.js';
 import Comment from '../models/comment.model.js';
 import User from '../models/user.model.js';
 import { apiresponse } from "../helper/apiResponse.js";
-import { apiError, clientError, serverError } from "../helper/CustomError.js";
+import { clientError, serverError } from "../helper/CustomError.js";
 
 
 //posts all comments
@@ -282,7 +282,6 @@ const deleteComment = asyncHanlder(async(req,res,next)=>{
     const userInfo = verifyToken(req.cookies.uid);
     //response
     var response;
-
     //user
     const user = await User.findOne(
         {
