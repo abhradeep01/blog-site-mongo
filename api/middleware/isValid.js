@@ -30,7 +30,6 @@ export const isValid = asyncHanlder(async (req,res,next) =>{
         );
         return res.status(response.statusCode).json(response)
     }
-
     //next
     next()
 })

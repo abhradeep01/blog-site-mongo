@@ -5,14 +5,11 @@ const commentRouter = express.Router();
 //get posts comment
 commentRouter.get('/:id',getPostsAllComments);
 
-
 //add comment route
 commentRouter.post("/:id/add",addComment);
 
-
 //edit comment route
 commentRouter.patch("/:id/edit",editComment);
-
 
 //delete comment route
 commentRouter.delete("/:id/delete",deleteComment);

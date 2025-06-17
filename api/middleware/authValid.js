@@ -31,7 +31,6 @@ const authValid = asyncHanlder(async (req,res,next)=>{
         );
         return res.status(response.statusCode).json(response)
     }
-
     // next
     next()
 })
