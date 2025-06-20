@@ -80,6 +80,53 @@ const ResetIcon = () =>{
         </svg>
     )
 }
+
+const AlertIcon = (props) =>{
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6" {...props}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+        </svg>
+    )
+}
+
+const SuccessIcon = (props) =>{
+    return(
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 text-emerald-500" {...props}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+        </svg>
+    )
+}
+
+const CategoryIcon = (props) => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" {...props} >
+            <path fill="currentColor" d="M7.885 10.23L12 3.463l4.116 6.769zm9.615 11q-1.567 0-2.649-1.081T13.769 17.5t1.082-2.649t2.649-1.082t2.649 1.082t1.082 2.649t-1.082 2.649t-2.649 1.082m-13.73-.5v-6.462h6.46v6.462zm13.73-.5q1.146 0 1.939-.792t.792-1.939t-.792-1.939t-1.939-.792t-1.939.792t-.792 1.939t.792 1.939t1.939.792m-12.73-.5h4.46v-4.462H4.77zm4.857-10.5h4.746L12 5.427zM17.5 17.5"/>
+        </svg>
+    )
+}
+
+const SearchIcon = (props) =>{
+    return(
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6" {...props}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+        </svg>
+    )
+}
+
+const BlogSiteIcon = ()=>{
+    return(
+        <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="60" cy="50" rx="40" ry="25" fill="#fde68a" />
+            <text x="50" y="58" fontFamily="Antic Slab, serif" fontSize="30" fontWeight="900" fill="black">
+                B.
+            </text>
+            <text x="80" y="58" fontFamily="Antic Slab, serif" fontSize="24" fontWeight="700" fill="#059669">
+                log
+            </text>
+        </svg>
+    )
+}
+
 //export
 export {
     LoginIcon,
@@ -91,5 +138,10 @@ export {
     EyeOpen,
     GoogleIcon,
     SendIcon,
-    ResetIcon
+    ResetIcon,
+    AlertIcon,
+    SuccessIcon,
+    CategoryIcon,
+    SearchIcon,
+    BlogSiteIcon
 }

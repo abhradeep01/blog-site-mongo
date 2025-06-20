@@ -3,7 +3,6 @@ import React from 'react'
 function useBreakPoint() {
     //size state
     const [width,setWidth] = React.useState(window.innerWidth);
-
     //useeffect
     React.useEffect(()=>{
         // event func 

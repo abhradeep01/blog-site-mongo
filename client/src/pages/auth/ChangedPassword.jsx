@@ -10,7 +10,7 @@ function ChangedPassword() {
         <pre className="w-fit font-gothicregular text-[1.15rem] font-light text-stone-600">
             Your password has been changed successfully ✅
         </pre>    
-        <button className='bg-black text-white capitalize py-2 px-2 rounded font-sen w-fit flex items-center mt-8'>
+        <button className='bg-black text-white capitalize py-2 px-2 rounded font-sen w-fit flex items-center mt-8 hover:cursor-pointer hover:opacity-90'>
             <a href="/login">
                 Back to login
             </a>

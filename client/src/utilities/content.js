@@ -25,4 +25,46 @@ const navContent = [
     },
 ]
 
-export {navContent}
+const categories = [
+    {
+        text:"all posts",
+        path:function(){
+            return `/`
+        }
+    },
+    {
+        text:"development",
+        path:function(){
+            return `?cat=${this.text}`
+        }
+    },
+    {
+        text:"web design",
+        path:function(){
+            return `?cat=${this.text}`
+        }
+    },
+    {
+        text:"database",
+        path:function(){
+            return `?cat=${this.text}`
+        }
+    },
+    {
+        text:"digital marketing",
+        path:function(){
+            return `?cat=${this.text}`
+        }
+    },
+    {
+        text:"ai & ml",
+        path:function(){
+            return `?cat=${this.text}`.replaceAll(" ","")
+        }
+    }
+]
+
+export {
+    navContent,
+    categories
+}

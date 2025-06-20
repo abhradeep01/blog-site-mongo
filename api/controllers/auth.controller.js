@@ -115,7 +115,6 @@ const login = asyncHanlder(async (req,res,next) =>{
     const { username, email, password, remember } = req.body;
     //response
     var response;
-    console.log(process.env.NODE_ENV);
     //check field valid
     if(!((username || email) && password)){
         return next(new clientError(
