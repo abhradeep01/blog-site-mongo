@@ -1,7 +1,7 @@
 import { Route, Routes } from 'react-router';
 import Home from './pages/Home';
 import Layout from './components/layout/Layout';
-import Login from './pages/auth/Login.jsx';
+import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import VerifyIdentity from './pages/auth/VerifyIdentity';
 import ChangePassword from './pages/auth/ChangePassword';
