@@ -3,8 +3,8 @@ export default class routeResponse {
         this.route = route;
         this.message = message;
         this.statusCode = statusCode || 200;
-        this.data = data;
+        data?this.data = data:null
         this.success = statusCode >= 200 && statusCode < 400 ? true : false;
-        this.errorname = errorname ;
+        errorname?this.errorname = errorname:null
     }
 }

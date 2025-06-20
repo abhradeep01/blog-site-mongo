@@ -9,6 +9,7 @@ import { apiresponse } from "../helper/apiResponse.js";
 import path from "path";
 import ejs from 'ejs';
 import routeResponse from "../helper/routingResponse.js";
+import 'dotenv/config'
 
 //register function
 const register = asyncHanlder(async(req,res,next)=>{
@@ -86,7 +87,7 @@ const register = asyncHanlder(async(req,res,next)=>{
                 expires:new Date(Date.now+3600000),
                 sameSite: "strict",
                 httpOnly: true,
-                secure: true
+                secure: process.env.NODE_ENV === "production"
             }).status(response.statusCode).json(response)
         }
     }).catch(err=>{
@@ -102,6 +103,7 @@ const register = asyncHanlder(async(req,res,next)=>{
         return next(new serverError(
             "serviceUnavailableError",
             "something went wrong!",
+            503
         ))
     });
 });
@@ -113,6 +115,7 @@ const login = asyncHanlder(async (req,res,next) =>{
     const { username, email, password, remember } = req.body;
     //response
     var response;
+    console.log(process.env.NODE_ENV);
     //check field valid
     if(!((username || email) && password)){
         return next(new clientError(
@@ -180,7 +183,7 @@ const login = asyncHanlder(async (req,res,next) =>{
         expires:new Date(Date.now+3600000),
         sameSite: "strict",
         httpOnly: true,
-        secure: true
+        secure: process.env.NODE_ENV === 'production'
     }).status(response.statusCode).json(response)
 });
 
@@ -252,7 +255,7 @@ const findUser = asyncHanlder(async (req,res,next)=>{
         expires:new Date(Date.now+3600000),
         sameSite: "strict",
         httpOnly: true,
-        secure: true
+        secure: process.env.NODE_ENV === 'production'
     }).status(response.statusCode).json(response)
 })
 
@@ -296,7 +299,8 @@ const resend = asyncHanlder(async (req,res,next) =>{
     //response sent
     response = new apiresponse(
         "OTP send to your email successfully",
-        200
+        200,
+        user.email
     );
     //response
     return res.status(response.statusCode).json(response)
@@ -357,8 +361,8 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
     user.otp = null;
     if(authInfo.result.purpose==="register"){
         user.isVerified = true;
+        await user.save();
     }
-    await user.save();
     //for log term
     token = createToken({
         id: user._id,
@@ -377,7 +381,7 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
         expires: new Date(Date.now()+authInfo.result.remember?86400000:3600000),
         sameSite:"strict",
         httpOnly: true,
-        secure: true
+        secure: process.env.NODE_ENV === 'production'
     })
     return res.status(response.statusCode).json(response);
 })
@@ -441,7 +445,7 @@ const changePassword = asyncHanlder(async (req,res,next) =>{
     response = new routeResponse(
         "/changed",
         "password change successfully",
-        202
+        202,
     );
     return res.status(response.statusCode).json(response)   
 })
@@ -456,7 +460,7 @@ const logout = asyncHanlder(async (req,res,next) =>{
     );
     return res.clearCookie('uid',{
         httpOnly:true,
-        secure:true,
+        secure:process.env.NODE_ENV === 'production',
         sameSite:"strict",
         path:'/'
     }).status(response.statusCode).json(response)
