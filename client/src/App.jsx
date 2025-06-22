@@ -1,10 +1,13 @@
+import { Route, Router, Routes } from 'react-router'
+import Login from './pages/Login'
+
 function App() {
 
   return (
     <>
-      <div className="text-[12rem]">
-        1rem
-      </div>
+      <Routes>
+        <Route path='/login' element={<Login/>}/>
+      </Routes>
     </>
   )
 }
