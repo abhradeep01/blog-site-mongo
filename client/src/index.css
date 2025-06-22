@@ -1,34 +1,68 @@
-@import url('https://fonts.googleapis.com/css2?family=AR+One+Sans:wght@400..700&family=Advent+Pro:ital,wdth,wght@0,100..200,100..900;1,100..200,100..900&family=Alata&family=Antic+Slab&family=Cascadia+Mono:ital,wght@0,200..700;1,200..700&family=Comic+Neue&family=Didact+Gothic&family=Duru+Sans&family=Gruppo&family=Imprima&family=Kulim+Park&family=Marvel&family=Montserrat:ital,wght@0,100..900;1,100..900&family=News+Cycle&family=PT+Sans&family=PT+Sans+Caption&family=Puritan&family=Quicksand:wght@300..700&family=Raleway:ital,wght@0,100..900;1,100..900&family=Recursive:wght@300..1000&family=Red+Hat+Mono:ital,wght@0,300..700;1,300..700&family=Roboto:ital,wdth,wght@0,75..100,100..900;1,75..100,100..900&family=Ropa+Sans&family=Sen:wght@400..800&family=Sulphur+Point&family=Underdog&family=Varela+Round&family=Varta:wght@300..700&display=swap');
-@import "tailwindcss";
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
 
-@theme {
-   --font-ar-one-sans: 'AR One Sans', sans-serif;
-  --font-advent-pro: 'Advent Pro', sans-serif;
-  --font-alata: 'Alata', sans-serif;
-  --font-antic-slab: 'Antic Slab', serif;
-  --font-cascadia-mono: 'Cascadia Mono', monospace;
-  --font-comic-neue: 'Comic Neue', cursive;
-  --font-didact-gothic: 'Didact Gothic', sans-serif;
-  --font-duru-sans: 'Duru Sans', sans-serif;
-  --font-gruppo: 'Gruppo', cursive;
-  --font-imprima: 'Imprima', sans-serif;
-  --font-kulim-park: 'Kulim Park', sans-serif;
-  --font-marvel: 'Marvel', sans-serif;
-  --font-montserrat: 'Montserrat', sans-serif;
-  --font-news-cycle: 'News Cycle', sans-serif;
-  --font-pt-sans: 'PT Sans', sans-serif;
-  --font-pt-sans-caption: 'PT Sans Caption', sans-serif;
-  --font-puritan: 'Puritan', sans-serif;
-  --font-quicksand: 'Quicksand', sans-serif;
-  --font-raleway: 'Raleway', sans-serif;
-  --font-recursive: 'Recursive', sans-serif;
-  --font-red-hat-mono: 'Red Hat Mono', monospace;
-  --font-roboto: 'Roboto', sans-serif;
-  --font-ropa-sans: 'Ropa Sans', sans-serif;
-  --font-sen: 'Sen', sans-serif;
-  --font-sulphur-point: 'Sulphur Point', sans-serif;
-  --font-underdog: 'Underdog', cursive;
-  --font-varela-round: 'Varela Round', sans-serif;
-  --font-varta: 'Varta', sans-serif;
-  
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
 }

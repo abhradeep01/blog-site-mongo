@@ -1,40 +1,33 @@
-import { Route, Routes } from 'react-router';
-import Home from './pages/Home';
-import Layout from './components/layout/Layout';
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import VerifyIdentity from './pages/auth/VerifyIdentity';
-import ChangePassword from './pages/auth/ChangePassword';
-import ChangedPassword from './pages/auth/ChangedPassword';
-import ForgetPassword from './pages/auth/ForgetPassword';
-import MostPopular from './pages/MostPopular';
-import Trending from './pages/Trending';
-import About from './pages/About';
-import Upload from './pages/Upload';
-import PostPage from './pages/PostPage';
-import Profile from './pages/Profile';
-
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
 
 function App() {
+  const [count, setCount] = useState(0)
+
   return (
     <>
-      <Routes>
-        <Route path='/' element={<Layout/>} >
-          <Route index path='/' element={<Home/>} />
-          <Route index path='/:id' element={<PostPage/>} />
-          <Route index path='/profile' element={<Profile/>} />
-          <Route path='/most popular' element={<MostPopular/>} />
-          <Route path='/upload' element={<Upload/>} />
-          <Route path='/trending' element={<Trending/>} />
-          <Route path='/about' element={<About/>} />
-        </Route>
-        <Route path='/login' element={<Login/>}/>
-        <Route path='/register' element={<Register/>}/>
-        <Route path='/verify' element={<VerifyIdentity/>}/>
-        <Route path='/changepassword' element={<ChangePassword/>}/>
-        <Route path='/changed' element={<ChangedPassword/>}/>
-        <Route path='/forget' element={<ForgetPassword/>}/>
-      </Routes>
+      <div>
+        <a href="https://vite.dev" target="_blank">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>Vite + React</h1>
+      <div className="card">
+        <button onClick={() => setCount((count) => count + 1)}>
+          count is {count}
+        </button>
+        <p>
+          Edit <code>src/App.jsx</code> and save to test HMR
+        </p>
+      </div>
+      <p className="read-the-docs">
+        Click on the Vite and React logos to learn more
+      </p>
     </>
   )
 }
