@@ -10,7 +10,7 @@ function ChangePassword() {
         confirmPassword:''
     });
 
-    const isSame:boolean = (input.newPassword === input.confirmPassword);
+    // const isSame:boolean = (input.newPassword === input.confirmPassword);
 
     const handleOnchange = (e:React.ChangeEvent<HTMLInputElement>) =>{
         e.preventDefault()
