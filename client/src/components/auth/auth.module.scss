@@ -1,0 +1,176 @@
+@use '../../constants/_font.scss' as * ;
+@use '../../constants/_animations.scss' as * ;
+// auth warpper
+.auth_wrapper{
+    border:solid 1px;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    font-family: $inter-font;
+    font-size:16px;
+    .container{
+        width: 536px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-block: 2rem;
+        box-shadow: 0px 0px 2px 0px rgb(170, 170, 170);
+        border-radius:0.2rem;
+        h1{
+            font-size:24px;
+            font-weight:600;
+            margin-top:0;
+        }
+        p{
+            text-align: center;
+            font-size: 15px;
+            margin-top:0;
+            color:rgb(109, 109, 109);
+            span{
+                font-weight:500;
+            }
+        }
+        a{
+            margin-top:0.5rem;
+            width: 80%;
+            text-decoration: none;
+            color: #5E6670;
+            span{
+                color: #0A65CC;
+            }
+        }
+        form{
+            width: 80%;
+            margin-top:0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap:1.25rem;
+            button{
+                margin-top:0.25rem;
+                width: 250px;
+                font-size:16px;
+                border:none;
+                background-color:rgb(7, 153, 250);
+                padding:0.4rem 1rem;
+                color: white;
+                font-weight:400;
+                border-radius:0.25rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap:0.25rem;
+                &:hover{
+                    opacity:0.95;
+                    transition: opacity 0.5ms;
+                }
+            }
+        }
+        button#regular{
+            color: white;
+            background-color:rgb(5, 180, 20);
+            display: flex;
+            align-items: center;
+            gap:0.5rem;
+            font-size:16px;
+            border:none;
+            padding:0.5rem;
+            border-radius:0.25rem;
+        }
+    }
+}
+
+// password field
+.password{
+    position: relative;
+    width: 100%;
+    .toggle_eye{
+        position: absolute;
+        background-color: transparent;
+        border:none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        top:0;
+        right:0.5rem;
+    }
+}
+// google auth btn
+.google_auth{
+    width: 300px;
+    font-size:16px;
+    display: flex;
+    gap:0.3rem;
+    justify-content: center;
+    align-items: center;
+    padding: 0.4rem;
+    border:none;
+    background-color:rgb(221, 221, 221);
+    border-radius: 0.25rem;
+    &:hover{
+        opacity:0.8;
+        transition: opacity 0.5ms;
+    }
+}
+// auth error
+.auth_error{
+    width: 100%;
+    border:solid 1px red;
+    padding: 0.5rem;
+    margin-top: 0.25rem;
+    box-sizing: border-box;
+    animation: heightGrow 3s backwards;
+}
+@media (max-width:1024px) {
+    .auth_wrapper{
+        .container{
+            width: 450px;
+            a{
+                width: 85%;
+            }
+            form{
+                width: 85%;
+            }
+        }
+    }
+}
+@media (max-width:820px) {
+    
+}
+@media (max-width:768px) {
+    .auth_wrapper{
+        .container{
+            width: 400px;
+            a{
+                width: 95%;
+            }
+            form{
+                width: 95%;
+            }
+        }
+    }
+}
+@media (max-width:640px) {
+    .auth_wrapper{
+        .container{
+            a{
+                width: 90%;
+            }
+            form{
+                width: 90%;
+            }
+        }
+    }
+}
+@media (max-width:480px) {
+    .auth_wrapper{
+        .container{
+            width: 95%;
+        }
+    }
+}
