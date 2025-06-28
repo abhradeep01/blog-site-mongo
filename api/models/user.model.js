@@ -27,10 +27,6 @@ const userSchema = new mongoose.Schema(
         bio:{
             type:String
         },
-        otp:{
-            type:Number,
-            default:null
-        },
         isVerified:{
             type:Boolean,
             required:true,

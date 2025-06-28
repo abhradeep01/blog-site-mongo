@@ -3,7 +3,6 @@ import 'dotenv/config';
 
 //verify token
 const verifyToken = (token,secret=process.env.ACCESS_TOKEN_KEY) =>{
-
     //return user info
     return jwt.verify(token,secret,(err,result)=>{
         if(err){
@@ -19,11 +18,10 @@ const verifyToken = (token,secret=process.env.ACCESS_TOKEN_KEY) =>{
     })
 }
 
-
 //token creat
-const createToken = (payload={},remember,secret=process.env.ACCESS_TOKEN_KEY) =>{
+const createToken = (payload={},time,secret=process.env.ACCESS_TOKEN_KEY)=>{
     //token
-    const token = jwt.sign(payload,secret,{expiresIn:remember?'24h':'1h'});
+    const token = jwt.sign(payload,secret,{expiresIn:time});
     return token;
 }
 

@@ -14,11 +14,11 @@ import 'dotenv/config'
 //register function
 const register = asyncHanlder(async(req,res,next)=>{
     //body
-    const { name, username, email, password, img } = req.body;
+    const { name, username, email, password } = req.body;
     // response
     var response;
     //validate fields
-    if(!name || !username || !email || !password || !img){
+    if(!name || !username || !email || !password){
         return next(new clientError(
             "validationError",
             "fill all required fields!"
@@ -48,8 +48,7 @@ const register = asyncHanlder(async(req,res,next)=>{
         name,
         username,
         email,
-        password:hashPassword,
-        img
+        password:hashPassword
     }).then(async (result)=>{
         //generate otp
         const otp = otpgenerate();
@@ -65,26 +64,24 @@ const register = asyncHanlder(async(req,res,next)=>{
                 503
             ))
         }
-        //otp saved 
-        result.otp = otp;
-        await result.save();
         if(result){
             const token = createToken(
                 {
                     email: result.email,
-                    remember: false,
+                    otp,
+                    remember: true,
                     purpose:"register"
-                }
+                },'5m'
             )
             response = new routeResponse(
                 '/verify',
-                `verification code is sent to ${result.email}`,
+                `verification code is sent to ${result.email} which is valid for 5 minutes`,
                 200,
                 result.email
             );
             return res.cookie('auth_id',token,{
-                maxAge:3600000,
-                expires:new Date(Date.now+3600000),
+                maxAge:300000 ,
+                expires:new Date(Date.now+300000),
                 sameSite: "strict",
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production"
@@ -159,27 +156,25 @@ const login = asyncHanlder(async (req,res,next) =>{
             503
         ));
     }
-    //otp saved
-    user.otp = otp;
-    await user.save();
     //token
     const token = createToken(
         {
             email:user.email,
             purpose:"login",
+            otp,
             remember
-        }
+        },'5m'
     )
     //response config
     response = new routeResponse(
         "/verify",
-        "Verification code send successfully to your registered email",
+        "OTP send successfully to your registered email which is valid for 5 minutes",
         200,
         user.email
     );
     return res.cookie('auth_id',token,{
-        maxAge:3600000,
-        expires:new Date(Date.now+3600000),
+        maxAge:300000,
+        expires:new Date(Date.now+300000),
         sameSite: "strict",
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production'
@@ -231,27 +226,25 @@ const findUser = asyncHanlder(async (req,res,next)=>{
             503
         ))
     }
-    //otp saved 
-    user.otp = otp;
-    await user.save();
     //token
     const token = createToken(
         {
             email:user.email,
+            otp,
             remember:false,
             purpose:"forget password"
-        }
+        },'5m'
     );
 
     //response res
     response = new apiresponse(
-        `Your account has been found and OTP send to your email`,
+        `Your account has been found and OTP send to your email OTP is valid for 5 minutes`,
         200,
         user.email
     );
     return res.cookie('auth_id',token,{
-        maxAge:3600000,
-        expires:new Date(Date.now+3600000),
+        maxAge:300000,
+        expires:new Date(Date.now+300000),
         sameSite: "strict",
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production'
@@ -292,17 +285,28 @@ const resend = asyncHanlder(async (req,res,next) =>{
             503
         ))
     }
-    //otp saved 
-    user.otp = otp;
-    await user.save();
-    //response sent
+    const token = createToken(
+        {
+            email:user.email,
+            otp,
+            purpose:'resend otp',
+            remember:authInfo.result?.remember
+        },'5m'
+    )
+    //response consfig
     response = new apiresponse(
-        "OTP send to your email successfully",
+        "OTP send to your email successfully which is valid for 5 minutes",
         200,
         user.email
     );
     //response
-    return res.status(response.statusCode).json(response)
+    return res.cookie('auth_id',token,{
+        maxAge:300000,
+        expires:new Date(Date.now+300000),
+        sameSite: "strict",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production'
+    }).status(response.statusCode).json(response)
 })
 
 
@@ -337,7 +341,7 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
         ))
     }
     // otp not matched
-    if(Number(otp) !== user.otp){
+    if(Number(otp) !== authInfo.result.otp){
         return next(new clientError(
             "invalidOTPError",
             "The verification code you entered is incorrect!",
@@ -367,7 +371,7 @@ const verifyCode = asyncHanlder(async(req,res,next)=>{
         id: user._id,
         username: user.username,
         email: user.email
-    },true);
+    },authInfo.result.remember?'24h':'1h');
     //response
     res.clearCookie('auth_id',{
         httpOnly:true,
